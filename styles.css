@@ -2655,7 +2655,8 @@ section {
     opacity: 1;
     transition: opacity 0.18s ease;
     pointer-events: none;
-    z-index: 2;
+    z-index: 20;
+    background: transparent;
 }
 
 .video-overlay.is-hidden {
@@ -2678,6 +2679,9 @@ section {
     transition: all 0.2s ease;
     color: var(--ink);
     font-size: 0;
+    padding: 0;
+    margin: 0;
+    outline: none;
 }
 
 .video-overlay .video-ctl:hover {
@@ -2693,11 +2697,40 @@ section {
     transform: scale(1.1);
 }
 
+.video-overlay .video-ctl:active {
+    transform: scale(0.95);
+    transition-duration: 0.1s;
+}
+
 .video-overlay .video-ctl svg {
     width: 22px;
     height: 22px;
     fill: var(--ink);
-    margin-left: 2px; /* Slight offset for visual centering of play triangle */
+    margin-left: 2px;
+    pointer-events: none;
+}
+
+/* Hide legacy video controls */
+.media-control,
+.speaker,
+.speaker-btn,
+.speaker-control,
+.video-sound-toggle,
+.testimonial-sound-toggle {
+    display: none !important;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .video-overlay .video-ctl {
+        width: 56px;
+        height: 56px;
+    }
+    
+    .video-overlay .video-ctl svg {
+        width: 20px;
+        height: 20px;
+    }
 }
 
 /* Video containers need relative positioning */
