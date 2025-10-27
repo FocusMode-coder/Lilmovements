@@ -72,6 +72,9 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeNavigation();
         initializeMobileOptimizations();
         initializePerformanceMonitoring();
+        
+        // Add unified video system
+        initializeUnifiedVideoSystem();
     });
     
     // Defer scroll animations until after initial load
@@ -1801,3 +1804,242 @@ if (document.readyState === 'loading') {
 } else {
     initializeVideoOverlays();
 }
+
+// ===== UNIFIED VIDEO OVERLAY SYSTEM - Clean Implementation =====
+function initializeUnifiedVideoSystem() {
+    console.log('Initializing unified video system...');
+    
+    // Find all videos in the document
+    const allVideos = document.querySelectorAll('video');
+    
+    allVideos.forEach(video => {
+        // Skip if already processed
+        if (video.dataset.unifiedOverlay === 'initialized') return;
+        video.dataset.unifiedOverlay = 'initialized';
+        
+        // Ensure video has proper attributes
+        video.muted = true;
+        video.loop = true;
+        video.autoplay = true;
+        video.playsInline = true;
+        video.setAttribute('playsinline', '');
+        video.setAttribute('webkit-playsinline', '');
+        
+        // Find or create video container
+        let container = video.closest('.media');
+        if (!container) {
+            container = video.parentElement;
+            if (!container) return;
+        }
+        
+        // Ensure container has relative positioning
+        const computedStyle = getComputedStyle(container);
+        if (computedStyle.position === 'static') {
+            container.style.position = 'relative';
+        }
+        
+        // Remove any existing overlays to avoid duplicates
+        const existingOverlays = container.querySelectorAll('.video-overlay, .video-control, .media-control');
+        existingOverlays.forEach(overlay => overlay.remove());
+        
+        // Create new unified overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'video-overlay';
+        
+        const playButton = document.createElement('button');
+        playButton.className = 'video-ctl';
+        playButton.type = 'button';
+        playButton.setAttribute('aria-label', 'Play with sound');
+        playButton.setAttribute('aria-pressed', 'false');
+        playButton.tabIndex = 0;
+        
+        // Add play icon
+        playButton.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M8 5v14l11-7z"/>
+            </svg>
+        `;
+        
+        overlay.appendChild(playButton);
+        container.appendChild(overlay);
+        
+        // Video state management
+        let isVideoMuted = true;
+        
+        function updateOverlayState() {
+            if (isVideoMuted) {
+                overlay.classList.remove('is-hidden');
+                playButton.setAttribute('aria-label', 'Play with sound');
+                playButton.setAttribute('aria-pressed', 'false');
+            } else {
+                overlay.classList.add('is-hidden');
+                playButton.setAttribute('aria-label', 'Mute video');
+                playButton.setAttribute('aria-pressed', 'true');
+            }
+        }
+        
+        function toggleVideoSound() {
+            if (!userHasInteracted) {
+                console.log('Video sound requires user interaction first');
+                return;
+            }
+            
+            if (isVideoMuted) {
+                // Mute all other videos first
+                document.querySelectorAll('video').forEach(otherVideo => {
+                    if (otherVideo !== video && !otherVideo.muted) {
+                        otherVideo.muted = true;
+                        // Update other overlays
+                        const otherContainer = otherVideo.closest('.media') || otherVideo.parentElement;
+                        if (otherContainer) {
+                            const otherOverlay = otherContainer.querySelector('.video-overlay');
+                            if (otherOverlay) {
+                                otherOverlay.classList.remove('is-hidden');
+                                const otherButton = otherOverlay.querySelector('.video-ctl');
+                                if (otherButton) {
+                                    otherButton.setAttribute('aria-label', 'Play with sound');
+                                    otherButton.setAttribute('aria-pressed', 'false');
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Lower background music volume when video audio is active
+                if (siteAudio && audioEnabled && !siteAudio.muted) {
+                    siteAudio.volume = 0.1;
+                }
+                
+                // Unmute this video
+                video.muted = false;
+                isVideoMuted = false;
+                
+                // Ensure video is playing
+                video.play().catch(() => {
+                    console.log('Video play failed');
+                });
+                
+                console.log('Video sound enabled');
+            } else {
+                // Mute this video
+                video.muted = true;
+                isVideoMuted = true;
+                
+                // Restore background music volume
+                if (siteAudio && audioEnabled && !siteAudio.muted) {
+                    siteAudio.volume = 0.25;
+                }
+                
+                console.log('Video sound disabled');
+            }
+            
+            updateOverlayState();
+        }
+        
+        // Event listeners
+        playButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleVideoSound();
+        });
+        
+        playButton.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleVideoSound();
+            }
+        });
+        
+        // Also allow clicking directly on video
+        video.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (userHasInteracted) {
+                toggleVideoSound();
+            }
+        });
+        
+        // Handle video events
+        video.addEventListener('volumechange', () => {
+            isVideoMuted = video.muted;
+            updateOverlayState();
+        });
+        
+        video.addEventListener('loadeddata', () => {
+            updateOverlayState();
+        });
+        
+        video.addEventListener('error', (e) => {
+            console.error('Video loading error:', e);
+            playButton.disabled = true;
+            playButton.setAttribute('aria-label', 'Video unavailable');
+            overlay.style.background = 'rgba(128, 128, 128, 0.5)';
+        });
+        
+        // Initialize state
+        updateOverlayState();
+        
+        console.log('Video overlay initialized for:', video.src || 'video element');
+    });
+}
+
+// Initialize the unified system when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    // ...existing critical path initialization...
+    
+    // Add unified video system to deferred initialization
+    requestIdleCallback(() => {
+        initializeChakraCursor();
+        initializeV916Videos();
+        initializeTestimonialCarousel();
+        initializeRegistrationModal();
+        initializeLogoClick();
+        initializeNavigation();
+        initializeMobileOptimizations();
+        initializePerformanceMonitoring();
+        
+        // Add unified video system
+        initializeUnifiedVideoSystem();
+    });
+    
+    // ...existing code...
+});
+
+// Watch for dynamically added videos
+const unifiedVideoObserver = new MutationObserver((mutations) => {
+    let hasNewVideos = false;
+    mutations.forEach(mutation => {
+        mutation.addedNodes.forEach(node => {
+            if (node.nodeType === 1) { // Element node
+                if (node.tagName === 'VIDEO' || node.querySelector('video')) {
+                    hasNewVideos = true;
+                }
+            }
+        });
+    });
+    
+    if (hasNewVideos) {
+        console.log('New videos detected, reinitializing...');
+        initializeUnifiedVideoSystem();
+    }
+});
+
+// Start observing
+unifiedVideoObserver.observe(document.body, {
+    childList: true,
+    subtree: true
+});
+
+// Safety check on window load to ensure all videos are properly initialized
+window.addEventListener('load', () => {
+    // Ensure all videos start muted
+    document.querySelectorAll('video').forEach(video => {
+        if (!video.muted) {
+            video.muted = true;
+        }
+    });
+    
+    // Initialize any videos that might have been missed
+    setTimeout(() => {
+        initializeUnifiedVideoSystem();
+    }, 100);
+});
