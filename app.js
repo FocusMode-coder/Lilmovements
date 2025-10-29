@@ -4,13 +4,6 @@ const videos = document.querySelectorAll('video');
 const v916Videos = document.querySelectorAll('.v916');
 const testimonialsTrack = document.querySelector('.testimonials-track');
 const logoLink = document.querySelector('.logo-link');
-const missionVideos = document.querySelectorAll('.mission-video');
-const meetVideos = document.querySelectorAll('.meet-video');
-const interviewVideos = document.querySelectorAll('.interview-video');
-const testimonialVideos = document.querySelectorAll('.testimonial-video');
-const videoSoundToggles = document.querySelectorAll('.video-sound-toggle');
-const testimonialSoundToggles = document.querySelectorAll('.testimonial-sound-toggle');
-const mediaControls = document.querySelectorAll('.media-control');
 
 // Navigation elements
 const navToggle = document.querySelector('.nav-toggle');
@@ -18,8 +11,8 @@ const navMenu = document.querySelector('.nav-menu');
 const navLinks = document.querySelectorAll('.nav-link');
 
 // Carousel elements
-const prevBtn = document.querySelector('.prev-btn');
-const nextBtn = document.querySelector('.next-btn');
+const prevBtn = document.querySelector('.carousel-prev');
+const nextBtn = document.querySelector('.carousel-next');
 const paginationDots = document.querySelectorAll('.pagination-dot');
 let currentSlide = 0;
 const slideWidth = 280 + 32; // card width + gap
@@ -65,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Defer non-critical functionality
     requestIdleCallback(() => {
         initializeChakraCursor();
-        initializeUnifiedVideoSystem(); // Use ONLY this video system
+        initializeUnifiedVideoSystem(); // ONLY this video system now
         initializeTestimonialCarousel();
         initializeRegistrationModal();
         initializeLogoClick();
@@ -89,7 +82,6 @@ function initializeUserInteractionTracking() {
         }
     };
 
-    // Track various user interactions
     document.addEventListener('click', trackInteraction);
     document.addEventListener('touchstart', trackInteraction);
     document.addEventListener('keydown', trackInteraction);
@@ -99,28 +91,21 @@ function initializeUserInteractionTracking() {
 function initializeHeroAnimation() {
     const documentElement = document.documentElement;
     
-    // Check for reduced motion preference - EXACT: skip animation and render final colors instantly
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        // Skip animation for users who prefer reduced motion - show end state immediately
         documentElement.classList.remove('is-intro');
         return;
     }
 
-    // Ensure initial intro state is set (should already be set in HTML to prevent FOUC)
     documentElement.classList.add('is-intro');
     
-    // EXACT: Use requestAnimationFrame to trigger the CSS transition
-    // This ensures the initial styles are painted before the transition begins
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-            // Remove the intro class to trigger the 2.6s color crossfade
-            // The CSS will handle the transition with cubic-bezier(0.22, 1, 0.36, 1)
             documentElement.classList.remove('is-intro');
         });
     });
 }
 
-// Site Audio System - Clean implementation following specifications
+// Site Audio System - Clean implementation
 function initializeGlobalAudio() {
     siteAudio = document.getElementById('siteAudio');
     const playMusicBtn = document.querySelector('.play-music-btn, .floating-music-btn');
@@ -130,24 +115,18 @@ function initializeGlobalAudio() {
         return;
     }
 
-    // Load saved preference from localStorage
     const savedPreference = localStorage.getItem(AUDIO_PREFERENCE_KEY);
     audioEnabled = savedPreference === 'true';
     
-    // Set audio properties - always start muted
     siteAudio.volume = 0.25;
     siteAudio.muted = true;
     
-    // Set initial button state - always shows current state
     updateAudioButtonState(playMusicBtn, false);
     
-    // Auto-play if enabled and user has interacted
     if (audioEnabled) {
-        // Wait for first user interaction, then play
         const handleFirstInteraction = () => {
             if (audioEnabled && userHasInteracted) {
                 playAudio(playMusicBtn);
-                // Remove this listener after first use
                 document.removeEventListener('click', handleFirstInteraction);
                 document.removeEventListener('touchstart', handleFirstInteraction);
                 document.removeEventListener('keydown', handleFirstInteraction);
@@ -159,7 +138,6 @@ function initializeGlobalAudio() {
         document.addEventListener('keydown', handleFirstInteraction);
     }
     
-    // Play button click handler
     playMusicBtn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -172,7 +150,6 @@ function initializeGlobalAudio() {
         toggleAudio(playMusicBtn);
     });
 
-    // Audio event handlers
     siteAudio.addEventListener('loadeddata', () => {
         console.log('Site audio loaded successfully');
     });
@@ -203,10 +180,8 @@ function toggleAudio(button) {
     }
 
     if (!audioEnabled || siteAudio.paused) {
-        // Start/resume music
         playAudio(button);
     } else {
-        // Pause music
         pauseAudio(button);
     }
 }
@@ -218,13 +193,11 @@ function playAudio(button) {
     
     if (playPromise !== undefined) {
         playPromise.then(() => {
-            // Audio started successfully
             audioEnabled = true;
             localStorage.setItem(AUDIO_PREFERENCE_KEY, 'true');
             updateAudioButtonState(button, true);
             console.log('Site audio started successfully');
         }).catch((error) => {
-            // Audio failed to start
             console.warn('Audio play failed:', error);
             audioEnabled = false;
             siteAudio.muted = true;
@@ -257,26 +230,344 @@ function updateAudioButtonState(button, isPlaying) {
     }
 }
 
+// ===== UNIFIED VIDEO SYSTEM - FIXED IMPLEMENTATION =====
+function initializeUnifiedVideoSystem() {
+    console.log('Initializing unified video system...');
+    
+    const allVideos = document.querySelectorAll('video');
+    let activeVideoAudio = null; // Track which video currently has sound
+    
+    allVideos.forEach(video => {
+        if (video.dataset.videoInitialized === 'true') return;
+        video.dataset.videoInitialized = 'true';
+        
+        // Ensure proper video attributes for autoplay and looping
+        video.muted = true;
+        video.loop = true;
+        video.autoplay = true;
+        video.playsInline = true;
+        video.setAttribute('playsinline', '');
+        video.setAttribute('webkit-playsinline', '');
+        video.setAttribute('preload', 'metadata');
+        
+        // Find container
+        let container = video.closest('.media');
+        if (!container) {
+            container = video.parentElement;
+            if (!container) return;
+        }
+        
+        // Ensure relative positioning
+        if (getComputedStyle(container).position === 'static') {
+            container.style.position = 'relative';
+        }
+        
+        // Remove existing overlays to prevent duplicates
+        const existingOverlays = container.querySelectorAll('.video-overlay, .video-control, .media-control');
+        existingOverlays.forEach(overlay => overlay.remove());
+        
+        // Create video overlay with play button
+        const overlay = document.createElement('div');
+        overlay.className = 'video-overlay';
+        overlay.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: inherit;
+            z-index: 2;
+            opacity: 1;
+            pointer-events: auto;
+        `;
+        
+        const playButton = document.createElement('button');
+        playButton.className = 'video-ctl';
+        playButton.type = 'button';
+        playButton.setAttribute('aria-label', 'Play with sound');
+        playButton.setAttribute('aria-pressed', 'false');
+        playButton.tabIndex = 0;
+        playButton.style.cssText = `
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            color: #000;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        `;
+        
+        playButton.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="width: 24px; height: 24px; margin-left: 2px;">
+                <path d="M8 5v14l11-7z"/>
+            </svg>
+        `;
+        
+        overlay.appendChild(playButton);
+        container.appendChild(overlay);
+        
+        // Video state management
+        let isVideoMuted = true;
+        
+        function showOverlay() {
+            overlay.style.opacity = '1';
+            overlay.style.pointerEvents = 'auto';
+            playButton.setAttribute('aria-label', 'Play with sound');
+            playButton.setAttribute('aria-pressed', 'false');
+        }
+        
+        function hideOverlay() {
+            overlay.style.opacity = '0';
+            overlay.style.pointerEvents = 'none';
+            playButton.setAttribute('aria-label', 'Mute video');
+            playButton.setAttribute('aria-pressed', 'true');
+        }
+        
+        function toggleVideoSound() {
+            if (!userHasInteracted) {
+                console.log('Video sound requires user interaction first');
+                return;
+            }
+            
+            if (isVideoMuted) {
+                // Mute any currently active video
+                if (activeVideoAudio && activeVideoAudio !== video) {
+                    activeVideoAudio.muted = true;
+                    const activeContainer = activeVideoAudio.closest('.media') || activeVideoAudio.parentElement;
+                    if (activeContainer) {
+                        const activeOverlay = activeContainer.querySelector('.video-overlay');
+                        if (activeOverlay) {
+                            activeOverlay.style.opacity = '1';
+                            activeOverlay.style.pointerEvents = 'auto';
+                        }
+                    }
+                }
+                
+                // Lower background music when video audio is active
+                if (siteAudio && audioEnabled && !siteAudio.muted) {
+                    siteAudio.volume = 0.1;
+                }
+                
+                // Unmute this video
+                video.muted = false;
+                isVideoMuted = false;
+                activeVideoAudio = video;
+                hideOverlay();
+                
+                // Ensure video is playing
+                video.play().catch(() => {
+                    console.log('Video play failed');
+                });
+                
+                console.log('Video sound enabled');
+            } else {
+                // Mute this video
+                video.muted = true;
+                isVideoMuted = true;
+                activeVideoAudio = null;
+                showOverlay();
+                
+                // Restore background music volume
+                if (siteAudio && audioEnabled && !siteAudio.muted) {
+                    siteAudio.volume = 0.25;
+                }
+                
+                console.log('Video sound disabled');
+            }
+        }
+        
+        // Event listeners
+        playButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleVideoSound();
+        });
+        
+        playButton.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleVideoSound();
+            }
+        });
+        
+        // Also allow clicking directly on video when overlay is hidden
+        video.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (userHasInteracted && !isVideoMuted) {
+                toggleVideoSound();
+            }
+        });
+        
+        // Handle video events
+        video.addEventListener('volumechange', () => {
+            isVideoMuted = video.muted;
+            if (isVideoMuted) {
+                showOverlay();
+            } else {
+                hideOverlay();
+            }
+        });
+        
+        video.addEventListener('loadeddata', () => {
+            // Ensure video starts playing when loaded
+            if (video.paused) {
+                video.play().catch(() => {
+                    console.log('Video autoplay prevented');
+                });
+            }
+        });
+        
+        video.addEventListener('error', (e) => {
+            console.error('Video loading error:', e);
+            playButton.disabled = true;
+            playButton.setAttribute('aria-label', 'Video unavailable');
+            overlay.style.background = 'rgba(128, 128, 128, 0.5)';
+        });
+        
+        // Ensure video loops properly
+        video.addEventListener('ended', () => {
+            video.currentTime = 0;
+            video.play().catch(() => {
+                console.log('Video replay failed');
+            });
+        });
+        
+        // Initialize with overlay showing
+        showOverlay();
+        
+        console.log('Video overlay initialized');
+    });
+    
+    // Intersection observer for performance - pause videos out of view
+    const videoObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            const video = entry.target;
+            
+            if (entry.isIntersecting) {
+                if (video.paused) {
+                    video.play().catch(() => {
+                        console.log('Video autoplay prevented');
+                    });
+                }
+            } else {
+                // Only pause if video is muted (don't interrupt audio)
+                if (video.muted && !video.paused) {
+                    video.pause();
+                }
+            }
+        });
+    }, {
+        threshold: 0.3,
+        rootMargin: '50px 0px 50px 0px'
+    });
+    
+    // Observe all videos
+    allVideos.forEach(video => {
+        videoObserver.observe(video);
+    });
+}
+
+// Enhanced testimonial carousel
+function initializeTestimonialCarousel() {
+    const testimonialsTrack = document.querySelector('.testimonials-track');
+    const prevBtn = document.querySelector('.carousel-prev');
+    const nextBtn = document.querySelector('.carousel-next');
+    const progressBar = document.querySelector('.progress-fill');
+    const progressContainer = document.querySelector('.carousel-progress');
+    const testimonialItems = document.querySelectorAll('.testimonial-item');
+    
+    if (!testimonialsTrack || !prevBtn || !nextBtn) return;
+    
+    let currentSlide = 0;
+    const totalSlides = testimonialItems.length;
+    let isNavigating = false;
+    
+    const getScrollPosition = (index) => {
+        const cardWidth = testimonialItems[0]?.offsetWidth || 0;
+        const gap = parseInt(getComputedStyle(testimonialsTrack).gap) || 32;
+        return index * (cardWidth + gap);
+    };
+    
+    function updateProgressBar() {
+        if (progressBar && progressContainer) {
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            progressBar.style.width = `${progress}%`;
+            progressContainer.setAttribute('aria-valuenow', Math.round(progress));
+        }
+    }
+    
+    function throttledNavigation(direction) {
+        if (isNavigating) return;
+        
+        isNavigating = true;
+        setTimeout(() => {
+            isNavigating = false;
+        }, 300);
+        
+        const prevSlide = currentSlide;
+        
+        if (direction === 'prev') {
+            currentSlide = currentSlide > 0 ? currentSlide - 1 : totalSlides - 1;
+        } else if (direction === 'next') {
+            currentSlide = currentSlide < totalSlides - 1 ? currentSlide + 1 : 0;
+        }
+        
+        if (currentSlide !== prevSlide) {
+            updateCarousel();
+        }
+    }
+    
+    function updateCarousel() {
+        const scrollPosition = getScrollPosition(currentSlide);
+        testimonialsTrack.scrollTo({
+            left: scrollPosition,
+            behavior: 'smooth'
+        });
+        
+        updateProgressBar();
+        
+        prevBtn.setAttribute('aria-label', 
+            `Previous testimonial (${currentSlide + 1} of ${totalSlides})`);
+        nextBtn.setAttribute('aria-label', 
+            `Next testimonial (${currentSlide + 1} of ${totalSlides})`);
+    }
+    
+    // Event listeners
+    prevBtn.addEventListener('click', () => throttledNavigation('prev'));
+    nextBtn.addEventListener('click', () => throttledNavigation('next'));
+    
+    // Initialize
+    updateCarousel();
+}
+
 // Improved Chakra cursor system with better click handling
 function initializeChakraCursor() {
-    // Skip cursor on mobile or touch devices
     if (window.innerWidth <= 768 || 'ontouchstart' in window) {
         return;
     }
 
-    // Create cursor element
     cursor = document.createElement('div');
     cursor.className = 'chakra-cursor';
-    cursor.style.pointerEvents = 'none'; // Ensure cursor never blocks clicks
+    cursor.style.pointerEvents = 'none';
     document.body.appendChild(cursor);
     cursorActive = true;
 
-    // Track mouse movement with throttling for performance
     let mouseMoveTimeout;
     document.addEventListener('mousemove', (e) => {
         if (!cursorActive) return;
         
-        // Throttle cursor updates for performance
         if (mouseMoveTimeout) {
             cancelAnimationFrame(mouseMoveTimeout);
         }
@@ -287,7 +578,6 @@ function initializeChakraCursor() {
         });
     });
 
-    // Update cursor color on scroll with throttling
     let colorUpdateTimeout;
     window.addEventListener('scroll', () => {
         if (!cursorActive) return;
@@ -298,10 +588,9 @@ function initializeChakraCursor() {
         
         colorUpdateTimeout = setTimeout(() => {
             updateChakraCursorColor();
-        }, 16); // ~60fps
+        }, 16);
     });
     
-    // Hide cursor when leaving window
     document.addEventListener('mouseleave', () => {
         if (cursor) cursor.style.opacity = '0';
     });
@@ -310,7 +599,6 @@ function initializeChakraCursor() {
         if (cursor) cursor.style.opacity = '0.8';
     });
 
-    // Hide cursor over interactive elements to prevent interference
     const interactiveElements = document.querySelectorAll('button, a, input, textarea, select, video, [role="button"], [tabindex]');
     interactiveElements.forEach(element => {
         element.addEventListener('mouseenter', () => {
@@ -336,13 +624,11 @@ function updateChakraCursorColor() {
     const documentHeight = document.documentElement.scrollHeight - window.innerHeight;
     const scrollPercentage = Math.min(scrollTop / documentHeight, 1);
 
-    // Calculate color progression through chakras
     const colorIndex = scrollPercentage * (chakraColors.length - 1);
     const lowerIndex = Math.floor(colorIndex);
     const upperIndex = Math.min(lowerIndex + 1, chakraColors.length - 1);
     const ratio = colorIndex - lowerIndex;
 
-    // Interpolate between two chakra colors
     const lowerColor = hexToRgb(chakraColors[lowerIndex]);
     const upperColor = hexToRgb(chakraColors[upperIndex]);
 
@@ -364,621 +650,9 @@ function hexToRgb(hex) {
     } : null;
 }
 
-// Enhanced testimonial carousel with Apple-style peek functionality and fixed video overlay controls
-function initializeTestimonialCarousel() {
-    const testimonialsTrack = document.querySelector('.testimonials-track');
-    const prevBtn = document.querySelector('.carousel-prev');
-    const nextBtn = document.querySelector('.carousel-next');
-    const progressBar = document.querySelector('.progress-fill');
-    const progressContainer = document.querySelector('.carousel-progress');
-    const testimonialItems = document.querySelectorAll('.testimonial-item');
-    
-    if (!testimonialsTrack || !prevBtn || !nextBtn) return;
-    
-    let currentSlide = 0;
-    const totalSlides = testimonialItems.length;
-    let isNavigating = false;
-    let autoScrollInterval = null;
-    let isAutoScrollPaused = false;
-    
-    // Drag-to-scroll variables
-    let isDragging = false;
-    let startX = 0;
-    let startY = 0;
-    let scrollLeft = 0;
-    let dragThreshold = 8; // Minimum pixels to start horizontal drag
-    
-    // Calculate scroll positions based on card width + gap
-    const getScrollPosition = (index) => {
-        const cardWidth = testimonialItems[0]?.offsetWidth || 0;
-        const gap = parseInt(getComputedStyle(testimonialsTrack).gap) || 32;
-        return index * (cardWidth + gap);
-    };
-    
-    // Update progress bar based on current slide
-    function updateProgressBar() {
-        if (progressBar && progressContainer) {
-            const progress = ((currentSlide + 1) / totalSlides) * 100;
-            progressBar.style.width = `${progress}%`;
-            progressContainer.setAttribute('aria-valuenow', Math.round(progress));
-        }
-    }
-    
-    // Throttled navigation to prevent rapid-fire interactions
-    function throttledNavigation(direction) {
-        if (isNavigating) return;
-        
-        isNavigating = true;
-        setTimeout(() => {
-            isNavigating = false;
-        }, 300);
-        
-        const prevSlide = currentSlide;
-        
-        if (direction === 'prev') {
-            currentSlide = currentSlide > 0 ? currentSlide - 1 : totalSlides - 1;
-        } else if (direction === 'next') {
-            currentSlide = currentSlide < totalSlides - 1 ? currentSlide + 1 : 0;
-        }
-        
-        if (currentSlide !== prevSlide) {
-            updateCarousel();
-            announceSlideChange();
-            pauseAutoScroll();
-        }
-    }
-    
-    // Update carousel position with smooth scrolling
-    function updateCarousel() {
-        const scrollPosition = getScrollPosition(currentSlide);
-        testimonialsTrack.scrollTo({
-            left: scrollPosition,
-            behavior: 'smooth'
-        });
-        
-        updateProgressBar();
-        
-        // Update navigation button states
-        prevBtn.setAttribute('aria-label', 
-            `Previous testimonial (${currentSlide + 1} of ${totalSlides})`);
-        nextBtn.setAttribute('aria-label', 
-            `Next testimonial (${currentSlide + 1} of ${totalSlides})`);
-    }
-    
-    // Screen reader announcements
-    function announceSlideChange() {
-        const announcement = document.createElement('div');
-        announcement.setAttribute('aria-live', 'polite');
-        announcement.setAttribute('aria-atomic', 'true');
-        announcement.className = 'sr-only';
-        announcement.textContent = `Showing testimonial ${currentSlide + 1} of ${totalSlides}`;
-        
-        document.body.appendChild(announcement);
-        setTimeout(() => {
-            document.body.removeChild(announcement);
-        }, 1000);
-    }
-    
-    // Enhanced wheel scroll handling - allow vertical scroll but handle horizontal
-    function handleWheelScroll(e) {
-        const deltaX = Math.abs(e.deltaX);
-        const deltaY = Math.abs(e.deltaY);
-        
-        // Only prevent default for primarily horizontal scrolling
-        if (deltaX > deltaY) {
-            e.preventDefault();
-            
-            const threshold = 50;
-            if (deltaX > threshold) {
-                if (e.deltaX > 0) {
-                    throttledNavigation('next');
-                } else {
-                    throttledNavigation('prev');
-                }
-            }
-        }
-        // Allow vertical scrolling to pass through for deltaY > deltaX
-    }
-    
-    // Enhanced drag-to-scroll with horizontal threshold
-    function handlePointerDown(e) {
-        if (e.target.closest('.video-overlay')) return; // Don't drag when clicking overlay
-        
-        isDragging = false; // Don't start dragging yet
-        startX = e.clientX;
-        startY = e.clientY;
-        scrollLeft = testimonialsTrack.scrollLeft;
-        
-        testimonialsTrack.style.cursor = 'grabbing';
-        testimonialsTrack.style.userSelect = 'none';
-        
-        // Set touch-action to allow vertical panning initially
-        testimonialsTrack.style.touchAction = 'pan-y';
-    }
-    
-    function handlePointerMove(e) {
-        if (!startX && !startY) return;
-        
-        const deltaX = e.clientX - startX;
-        const deltaY = e.clientY - startY;
-        
-        // Check if movement is primarily horizontal
-        if (!isDragging && (Math.abs(deltaX) > Math.abs(deltaY) + dragThreshold)) {
-            isDragging = true;
-            // Now prevent vertical scrolling for this gesture
-            testimonialsTrack.style.touchAction = 'none';
-            pauseAutoScroll();
-        }
-        
-        if (isDragging) {
-            e.preventDefault();
-            const scrollPosition = scrollLeft - deltaX;
-            testimonialsTrack.scrollLeft = scrollPosition;
-        }
-    }
-    
-    function handlePointerUp(e) {
-        if (isDragging) {
-            // Snap to nearest item after drag
-            const scrollLeft = testimonialsTrack.scrollLeft;
-            const cardWidth = testimonialItems[0]?.offsetWidth || 0;
-            const gap = parseInt(getComputedStyle(testimonialsTrack).gap) || 32;
-            const newIndex = Math.round(scrollLeft / (cardWidth + gap));
-            
-            if (newIndex !== currentSlide && newIndex >= 0 && newIndex < totalSlides) {
-                currentSlide = newIndex;
-                updateCarousel();
-            }
-        }
-        
-        // Reset drag state
-        isDragging = false;
-        startX = 0;
-        startY = 0;
-        testimonialsTrack.style.cursor = '';
-        testimonialsTrack.style.userSelect = '';
-        testimonialsTrack.style.touchAction = 'pan-y'; // Reset to allow vertical
-    }
-    
-    // Keyboard navigation - arrow keys move one snap
-    function handleCarouselKeyboard(e) {
-        switch (e.key) {
-            case 'ArrowLeft':
-                e.preventDefault();
-                throttledNavigation('prev');
-                break;
-            case 'ArrowRight':
-                e.preventDefault();
-                throttledNavigation('next');
-                break;
-            case 'Home':
-                e.preventDefault();
-                currentSlide = 0;
-                updateCarousel();
-                announceSlideChange();
-                pauseAutoScroll();
-                break;
-            case 'End':
-                e.preventDefault();
-                currentSlide = totalSlides - 1;
-                updateCarousel();
-                announceSlideChange();
-                pauseAutoScroll();
-                break;
-        }
-    }
-    
-    // Auto-advance every ~5s when idle
-    function startAutoScroll() {
-        if (autoScrollInterval) return;
-        
-        autoScrollInterval = setInterval(() => {
-            if (!isAutoScrollPaused && !isNavigating && !isDragging) {
-                throttledNavigation('next');
-            }
-        }, 5000); // Every 5 seconds
-    }
-    
-    // Pause on hover/focus/interact
-    function pauseAutoScroll() {
-        isAutoScrollPaused = true;
-        setTimeout(() => {
-            isAutoScrollPaused = false;
-        }, 10000); // Resume after 10 seconds
-    }
-    
-    function stopAutoScroll() {
-        if (autoScrollInterval) {
-            clearInterval(autoScrollInterval);
-            autoScrollInterval = null;
-        }
-    }
-    
-    // Event listeners for carousel navigation
-    prevBtn.addEventListener('click', () => throttledNavigation('prev'));
-    nextBtn.addEventListener('click', () => throttledNavigation('next'));
-    
-    // Enhanced scroll handling - allow vertical, handle horizontal
-    testimonialsTrack.addEventListener('wheel', handleWheelScroll, { passive: false });
-    
-    // Drag-to-scroll with horizontal threshold
-    testimonialsTrack.addEventListener('pointerdown', handlePointerDown);
-    document.addEventListener('pointermove', handlePointerMove);
-    document.addEventListener('pointerup', handlePointerUp);
-    
-    // Touch events for mobile
-    testimonialsTrack.addEventListener('touchstart', (e) => {
-        const touch = e.touches[0];
-        handlePointerDown({ clientX: touch.clientX, clientY: touch.clientY });
-    }, { passive: true });
-    
-    document.addEventListener('touchmove', (e) => {
-        if (isDragging) {
-            e.preventDefault(); // Only prevent when actively dragging horizontally
-        }
-        const touch = e.touches[0];
-        if (touch) {
-            handlePointerMove({ clientX: touch.clientX, clientY: touch.clientY, preventDefault: () => e.preventDefault() });
-        }
-    }, { passive: false });
-    
-    document.addEventListener('touchend', handlePointerUp, { passive: true });
-    
-    // Keyboard navigation
-    testimonialsTrack.addEventListener('keydown', handleCarouselKeyboard);
-    
-    // Pause auto-scroll on hover/focus/interact
-    const carousel = document.querySelector('.apple-carousel') || testimonialsTrack.parentElement;
-    carousel.addEventListener('mouseenter', pauseAutoScroll);
-    carousel.addEventListener('focus', pauseAutoScroll, true);
-    carousel.addEventListener('pointerdown', pauseAutoScroll);
-    carousel.addEventListener('touchstart', pauseAutoScroll);
-    
-    // Touch/scroll detection for manual scrolling
-    let scrollTimeout;
-    let userScrolling = false;
-    
-    testimonialsTrack.addEventListener('scroll', () => {
-        if (userScrolling || isDragging) return;
-        
-        if (scrollTimeout) {
-            clearTimeout(scrollTimeout);
-        }
-        
-        scrollTimeout = setTimeout(() => {
-            const scrollLeft = testimonialsTrack.scrollLeft;
-            const cardWidth = testimonialItems[0]?.offsetWidth || 0;
-            const gap = parseInt(getComputedStyle(testimonialsTrack).gap) || 32;
-            const newIndex = Math.round(scrollLeft / (cardWidth + gap));
-            
-            if (newIndex !== currentSlide && newIndex >= 0 && newIndex < totalSlides) {
-                currentSlide = newIndex;
-                userScrolling = true;
-                updateProgressBar();
-                pauseAutoScroll();
-                setTimeout(() => { userScrolling = false; }, 100);
-            }
-        }, 150);
-    });
-    
-    // Initialize video overlay controls for testimonials
-    initializeTestimonialVideoOverlays();
-    
-    // Lazy loading and IntersectionObserver for videos - pause off-screen videos
-    const videoObserver = createThrottledObserver((entries) => {
-        entries.forEach(entry => {
-            const video = entry.target;
-            
-            if (entry.isIntersecting) {
-                // Lazy load video if not already loaded
-                if (video.preload === 'none') {
-                    video.preload = 'metadata';
-                }
-                
-                requestAnimationFrame(() => {
-                    if (video.readyState >= 2) {
-                        video.play().catch(() => {
-                            console.log('Testimonial video autoplay prevented');
-                        });
-                    }
-                });
-            } else {
-                // Pause videos that are out of view
-                if (!video.paused) {
-                    video.pause();
-                }
-            }
-        });
-    }, {
-        threshold: 0.3,
-        rootMargin: '50px 0px 50px 0px'
-    });
-
-    // Observe all testimonial videos
-    const testimonialVideos = document.querySelectorAll('.testimonial-video');
-    testimonialVideos.forEach(video => {
-        videoObserver.observe(video);
-        
-        // Set default attributes for testimonial videos
-        video.setAttribute('muted', '');
-        video.setAttribute('playsinline', '');
-        video.setAttribute('loop', '');
-        video.setAttribute('preload', 'metadata');
-        video.setAttribute('autoplay', '');
-        
-        // Set initial lazy loading for performance
-        video.preload = 'none';
-        
-        // Error handling
-        video.addEventListener('error', (e) => {
-            console.error('Testimonial video loading error:', e);
-            video.setAttribute('aria-label', 'Video unavailable');
-        });
-    });
-    
-    // Enhanced ARIA labels for testimonial items
-    testimonialItems.forEach((item, index) => {
-        item.setAttribute('aria-label', `Community testimonial ${index + 1} of ${totalSlides}`);
-    });
-    
-    // Initialize carousel
-    updateCarousel();
-    
-    // Start auto-advance after initial load
-    setTimeout(() => {
-        startAutoScroll();
-    }, 2000);
-    
-    // Handle window resize
-    let resizeTimeout;
-    window.addEventListener('resize', () => {
-        if (resizeTimeout) {
-            clearTimeout(resizeTimeout);
-        }
-        resizeTimeout = setTimeout(() => {
-            updateCarousel();
-        }, 250);
-    }, { passive: true });
-    
-    // Clean up on page unload
-    window.addEventListener('beforeunload', () => {
-        stopAutoScroll();
-        videoObserver.disconnect();
-    });
-}
-
-// New function: Initialize video overlay controls specifically for testimonials
-function initializeTestimonialVideoOverlays() {
-    const testimonialVideos = document.querySelectorAll('.testimonial-video');
-    
-    testimonialVideos.forEach(video => {
-        const mediaContainer = video.closest('.media');
-        if (!mediaContainer) return;
-        
-        // Create video overlay with PLAY button
-        const overlay = document.createElement('button');
-        overlay.className = 'video-overlay';
-        overlay.setAttribute('tabindex', '0');
-        overlay.setAttribute('aria-pressed', 'false');
-        overlay.setAttribute('aria-label', 'Play with sound');
-        
-        // Create play icon SVG
-        overlay.innerHTML = `
-            <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M8 6.82v10.36c0 .79.87 1.27 1.54.84l8.14-5.18c.62-.39.62-1.29 0-1.68L9.54 5.98C8.87 5.55 8 6.03 8 6.82z"/>
-            </svg>
-        `;
-        
-        // Insert overlay into media container
-        mediaContainer.appendChild(overlay);
-        
-        // Track mute state (all testimonial videos start muted)
-        let isMuted = true;
-        
-        // Overlay click handler
-        const handleOverlayClick = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            if (!userHasInteracted) {
-                console.log('Video overlay requires user interaction first');
-                return;
-            }
-            
-            if (isMuted) {
-                // Mute all other testimonial videos first
-                testimonialVideos.forEach(otherVideo => {
-                    if (otherVideo !== video) {
-                        otherVideo.muted = true;
-                        const otherContainer = otherVideo.closest('.media');
-                        const otherOverlay = otherContainer?.querySelector('.video-overlay');
-                        if (otherOverlay) {
-                            otherOverlay.classList.remove('hidden');
-                            otherOverlay.setAttribute('aria-pressed', 'false');
-                            otherOverlay.setAttribute('aria-label', 'Play with sound');
-                        }
-                    }
-                });
-                
-                // Lower background music when video audio is active
-                if (siteAudio && audioEnabled && !siteAudio.muted) {
-                    siteAudio.volume = 0.1;
-                }
-                
-                // Unmute target video and hide overlay
-                video.muted = false;
-                overlay.classList.add('hidden');
-                overlay.setAttribute('aria-pressed', 'true');
-                overlay.setAttribute('aria-label', 'Mute');
-                
-                isMuted = false;
-                console.log('Testimonial video sound enabled');
-            } else {
-                // Mute target video and show overlay
-                video.muted = true;
-                overlay.classList.remove('hidden');
-                overlay.setAttribute('aria-pressed', 'false');
-                overlay.setAttribute('aria-label', 'Play with sound');
-                
-                // Restore background music volume
-                if (siteAudio && audioEnabled && !siteAudio.muted) {
-                    siteAudio.volume = 0.25;
-                }
-                
-                isMuted = true;
-                console.log('Testimonial video sound disabled');
-            }
-        };
-        
-        // Event listeners for overlay
-        overlay.addEventListener('click', handleOverlayClick);
-        
-        // Keyboard support for overlay
-        overlay.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                handleOverlayClick(e);
-            }
-        });
-        
-        // Also handle direct video clicks for secondary toggle
-        video.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (userHasInteracted && !isMuted) {
-                // Only handle click if video is currently unmuted (overlay is hidden)
-                handleOverlayClick(e);
-            }
-        });
-        
-        // Ensure overlay starts visible for all testimonial videos
-        overlay.classList.remove('hidden');
-    });
-}
-
-// Enhanced performance monitoring
-function initializePerformanceMonitoring() {
-    // Monitor Long Tasks
-    if ('PerformanceObserver' in window) {
-        try {
-            const longTaskObserver = new PerformanceObserver((list) => {
-                list.getEntries().forEach((entry) => {
-                    if (entry.duration > 50) {
-                        console.warn(`Long task detected: ${entry.duration}ms`);
-                    }
-                });
-            });
-            longTaskObserver.observe({ entryTypes: ['longtask'] });
-        } catch (e) {
-            console.log('Long task monitoring not supported');
-        }
-    }
-    
-    // Monitor memory usage
-    if ('memory' in performance) {
-        const checkMemory = () => {
-            const memory = performance.memory;
-            const usageRatio = memory.usedJSHeapSize / memory.jsHeapSizeLimit;
-            
-            if (usageRatio > 0.9) {
-                console.warn('High memory usage detected:', {
-                    used: Math.round(memory.usedJSHeapSize / 1048576) + 'MB',
-                    limit: Math.round(memory.jsHeapSizeLimit / 1048576) + 'MB'
-                });
-                
-                // Show performance warning
-                showPerformanceWarning('High memory usage detected');
-            }
-        };
-        
-        // Check every 30 seconds
-        setInterval(checkMemory, 30000);
-    }
-    
-    // Monitor FPS
-    let lastTime = performance.now();
-    let frameCount = 0;
-    let fpsSum = 0;
-    
-    function measureFPS() {
-        const now = performance.now();
-        const delta = now - lastTime;
-        lastTime = now;
-        
-        const fps = 1000 / delta;
-        fpsSum += fps;
-        frameCount++;
-        
-        if (frameCount >= 60) { // Check average FPS every 60 frames
-            const avgFPS = fpsSum / frameCount;
-            
-            if (avgFPS < 30) {
-                console.warn(`Low FPS detected: ${avgFPS.toFixed(1)}`);
-                showPerformanceWarning('Performance issues detected');
-            }
-            
-            frameCount = 0;
-            fpsSum = 0;
-        }
-        
-        requestAnimationFrame(measureFPS);
-    }
-    
-    // Start FPS monitoring only if no reduced motion preference
-    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        requestAnimationFrame(measureFPS);
-    }
-}
-
-function showPerformanceWarning(message) {
-    let warning = document.querySelector('.performance-warning');
-    
-    if (!warning) {
-        warning = document.createElement('div');
-        warning.className = 'performance-warning';
-        document.body.appendChild(warning);
-    }
-    
-    warning.textContent = message;
-    warning.classList.add('show');
-    
-    // Auto-hide after 5 seconds
-    setTimeout(() => {
-        warning.classList.remove('show');
-    }, 5000);
-}
-
-// Enhanced scroll animations with throttling
-function initializeScrollAnimations() {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        return;
-    }
-
-    const animatedElements = document.querySelectorAll('.fade-in, .slide-up, .mission-item, .interview-card, .testimonial-item');
-    
-    // Throttled intersection observer for animations
-    const animationObserver = createThrottledObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('animate-in');
-                // Unobserve after animation to improve performance
-                animationObserver.unobserve(entry.target);
-            }
-        });
-    }, {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    });
-    
-    animatedElements.forEach(element => {
-        animationObserver.observe(element);
-    });
-}
-
-// Enhanced registration modal with full accessibility
 function initializeRegistrationModal() {
     if (!modal || !registerBtn || !modalClose || !cancelBtn) return;
     
-    // Track focusable elements for focus trap
     let focusableElements = [];
     let firstFocusable, lastFocusable;
     
@@ -990,7 +664,6 @@ function initializeRegistrationModal() {
         lastFocusable = focusableElements[focusableElements.length - 1];
     }
     
-    // Enhanced focus trap
     function trapFocus(e) {
         if (e.key === 'Tab') {
             if (e.shiftKey) {
@@ -1011,48 +684,30 @@ function initializeRegistrationModal() {
         }
     }
     
-    // Open modal with enhanced accessibility
     function openModal() {
         modal.style.display = 'flex';
         modal.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
         
-        // Update focusable elements
         updateFocusableElements();
         
-        // Focus management
         if (firstFocusable) {
             setTimeout(() => firstFocusable.focus(), 100);
         }
         
-        // Add event listeners
         modal.addEventListener('keydown', trapFocus);
-        
-        // Announce modal opening to screen readers
-        const announcement = document.createElement('div');
-        announcement.setAttribute('aria-live', 'assertive');
-        announcement.className = 'sr-only';
-        announcement.textContent = 'Registration form opened';
-        modal.appendChild(announcement);
     }
     
-    // Close modal with cleanup
     function closeModal() {
         modal.style.display = 'none';
         modal.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
         
-        // Remove event listeners
         modal.removeEventListener('keydown', trapFocus);
-        
-        // Return focus to trigger button
         registerBtn.focus();
-        
-        // Reset form
         resetForm();
     }
     
-    // Event listeners
     registerBtn.addEventListener('click', (e) => {
         e.preventDefault();
         openModal();
@@ -1061,300 +716,19 @@ function initializeRegistrationModal() {
     modalClose.addEventListener('click', closeModal);
     cancelBtn.addEventListener('click', closeModal);
     
-    // Close on backdrop click
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
             closeModal();
         }
     });
-    
-    // Enhanced form validation
-    if (registrationForm) {
-        const formFields = registrationForm.querySelectorAll('input[required], textarea[required]');
-        
-        // Real-time validation with debouncing
-        formFields.forEach(field => {
-            let validationTimeout;
-            
-            const validateField = () => {
-                const isValid = field.checkValidity();
-                const errorContainer = document.getElementById(`${field.id}-error`);
-                
-                field.setAttribute('aria-invalid', (!isValid).toString());
-                
-                if (!isValid && field.validationMessage) {
-                    errorContainer.textContent = field.validationMessage;
-                    errorContainer.classList.remove('sr-only');
-                    field.setAttribute('aria-describedby', errorContainer.id);
-                } else {
-                    errorContainer.textContent = '';
-                    errorContainer.classList.add('sr-only');
-                    field.removeAttribute('aria-describedby');
-                }
-                
-                return isValid;
-            };
-            
-            // Debounced validation
-            const debouncedValidation = () => {
-                if (validationTimeout) {
-                    clearTimeout(validationTimeout);
-                }
-                validationTimeout = setTimeout(validateField, 300);
-            };
-            
-            field.addEventListener('blur', validateField);
-            field.addEventListener('input', debouncedValidation);
-        });
-        
-        // Form submission with loading state
-        registrationForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            // Set loading state
-            const submitBtn = registrationForm.querySelector('[type="submit"]');
-            submitBtn.setAttribute('aria-busy', 'true');
-            submitBtn.disabled = true;
-            
-            // Validate all fields
-            let isFormValid = true;
-            formFields.forEach(field => {
-                const isValid = field.checkValidity();
-                field.setAttribute('aria-invalid', (!isValid).toString());
-                if (!isValid) isFormValid = false;
-            });
-
-            // Simulate processing delay
-            setTimeout(() => {
-                submitBtn.setAttribute('aria-busy', 'false');
-                submitBtn.disabled = false;
-                
-                if (isFormValid) {
-                    // Show success
-                    registrationForm.style.display = 'none';
-                    const successMessage = document.getElementById('form-success');
-                    successMessage.classList.remove('hidden');
-                    successMessage.focus();
-                    
-                    // Auto-close after 3 seconds
-                    setTimeout(closeModal, 3000);
-                } else {
-                    // Focus first invalid field
-                    const firstInvalid = registrationForm.querySelector('[aria-invalid="true"]');
-                    if (firstInvalid) {
-                        firstInvalid.focus();
-                    }
-                }
-            }, 1000);
-        });
-    }
 }
 
-// Enhanced mobile optimizations
-function initializeMobileOptimizations() {
-    // Detect mobile/touch devices
-    const isMobile = window.innerWidth <= 768 || 'ontouchstart' in window;
-    
-    if (isMobile) {
-        // Disable cursor on mobile
-        cursorActive = false;
-        if (cursor) {
-            cursor.style.display = 'none';
-        }
-        
-        // Optimize touch scrolling
-        document.body.style.touchAction = 'manipulation';
-        
-        // Prevent zoom on input focus
-        const inputs = document.querySelectorAll('input, textarea');
-        inputs.forEach(input => {
-            if (input.type !== 'file') {
-                input.style.fontSize = '16px'; // Prevent iOS zoom
-            }
-        });
-    }
-    
-    // Handle orientation change with throttling
-    let orientationTimeout;
-    window.addEventListener('orientationchange', () => {
-        if (orientationTimeout) {
-            clearTimeout(orientationTimeout);
-        }
-        
-        orientationTimeout = setTimeout(() => {
-            // Recalculate layouts after orientation change
-            window.dispatchEvent(new Event('resize'));
-        }, 100);
-    }, { passive: true });
-    
-    // Optimized scroll handling with throttling
-    let scrollTimeout;
-    const optimizedScrollHandler = () => {
-        if (scrollTimeout) return;
-        
-        scrollTimeout = setTimeout(() => {
-            if (cursorActive) {
-                updateChakraCursorColor();
-            }
-            scrollTimeout = null;
-        }, 16); // ~60fps
-    };
-    
-    window.addEventListener('scroll', optimizedScrollHandler, { passive: true });
-}
-
-// Throttled intersection observer for better performance
-function createThrottledObserver(callback, options = {}) {
-    const defaultOptions = {
-        threshold: 0.3,
-        rootMargin: '50px 0px 50px 0px',
-        ...options
-    };
-    
-    let timeoutId;
-    const throttledCallback = (entries) => {
-        if (timeoutId) return;
-        
-        timeoutId = setTimeout(() => {
-            callback(entries);
-            timeoutId = null;
-        }, 16); // ~60fps
-    };
-    
-    return new IntersectionObserver(throttledCallback, defaultOptions);
-}
-
-// Enhanced navigation system - includes footer links
-function initializeNavigation() {
-    // Mobile menu toggle
-    if (navToggle && navMenu) {
-        navToggle.addEventListener('click', () => {
-            const isExpanded = navToggle.getAttribute('aria-expanded') === 'true';
-            
-            navToggle.setAttribute('aria-expanded', (!isExpanded).toString());
-            navMenu.classList.toggle('active');
-            
-            // Update hamburger icon
-            navToggle.textContent = navMenu.classList.contains('active') ? '✕' : '☰';
-            
-            // Manage focus
-            if (navMenu.classList.contains('active')) {
-                const firstNavLink = navMenu.querySelector('.nav-link');
-                if (firstNavLink) {
-                    setTimeout(() => firstNavLink.focus(), 100);
-                }
-            }
-        });
-        
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!navToggle.contains(e.target) && !navMenu.contains(e.target)) {
-                if (navMenu.classList.contains('active')) {
-                    navMenu.classList.remove('active');
-                    navToggle.setAttribute('aria-expanded', 'false');
-                    navToggle.textContent = '☰';
-                }
-            }
-        });
-        
-        // Close mobile menu on escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && navMenu.classList.contains('active')) {
-                navMenu.classList.remove('active');
-                navToggle.setAttribute('aria-expanded', 'false');
-                navToggle.textContent = '☰';
-                navToggle.focus();
-            }
-        });
-    }
-    
-    // Smooth scrolling for all navigation links (header and footer)
-    const allNavLinks = document.querySelectorAll('.nav-link, .footer-link');
-    allNavLinks.forEach(link => {
+function initializeLogoClick() {
+    const brandLinks = document.querySelectorAll('.brand, .hero__logo');
+    brandLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             
-            const targetId = link.getAttribute('href');
-            const targetSection = document.querySelector(targetId);
-            
-            if (targetSection) {
-                // Close mobile menu if open
-                if (navMenu && navMenu.classList.contains('active')) {
-                    navMenu.classList.remove('active');
-                    navToggle.setAttribute('aria-expanded', 'false');
-                    navToggle.textContent = '☰';
-                }
-                
-                // Calculate offset for fixed header
-                const headerHeight = document.querySelector('#header').offsetHeight;
-                const targetPosition = targetSection.offsetTop - headerHeight - 20; // Extra 20px padding
-                
-                // Smooth scroll with reduced motion support
-                if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                    window.scrollTo(0, targetPosition);
-                } else {
-                    window.scrollTo({
-                        top: targetPosition,
-                        behavior: 'smooth'
-                    });
-                }
-                
-                // Update focus for accessibility
-                targetSection.setAttribute('tabindex', '-1');
-                setTimeout(() => {
-                    targetSection.focus();
-                    targetSection.removeAttribute('tabindex');
-                }, 300);
-            }
-        });
-    });
-
-    // Navigation active state tracking
-    function updateActiveNavigation() {
-        const sections = document.querySelectorAll('section[id]');
-        const navLinks = document.querySelectorAll('.nav a[href^="#"]');
-        
-        let currentSection = '';
-        
-        sections.forEach(section => {
-            const sectionTop = section.offsetTop - 100; // Account for fixed header
-            const sectionHeight = section.offsetHeight;
-            
-            if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
-                currentSection = section.getAttribute('id');
-            }
-        });
-        
-        // Update nav links
-        navLinks.forEach(link => {
-            link.classList.remove('active');
-            const href = link.getAttribute('href');
-            
-            // Handle specific section mappings
-            if (href === '#mission' && currentSection === 'mission') {
-                link.classList.add('active');
-            } else if (href === '#meet' && (currentSection === 'meet-lily' || currentSection === 'lily-speaks')) {
-                link.classList.add('active');
-            } else if (href === '#classes' && currentSection === 'classes') {
-                link.classList.add('active');
-            } else if (href === '#community' && (currentSection === 'testimonials' || currentSection === 'social')) {
-                link.classList.add('active');
-            }
-        });
-    }
-    
-    // Add scroll listener for navigation
-    window.addEventListener('scroll', updateActiveNavigation);
-    window.addEventListener('load', updateActiveNavigation);
-}
-
-// Logo click functionality
-function initializeLogoClick() {
-    if (logoLink) {
-        logoLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            
-            // Scroll to top
             if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
                 window.scrollTo(0, 0);
             } else {
@@ -1363,312 +737,91 @@ function initializeLogoClick() {
                     behavior: 'smooth'
                 });
             }
+        });
+    });
+}
+
+function initializeNavigation() {
+    const allNavLinks = document.querySelectorAll('.nav a, .footer-link');
+    allNavLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
             
-            // Focus hero for accessibility
-            const hero = document.querySelector('.hero');
-            if (hero) {
-                hero.setAttribute('tabindex', '-1');
-                setTimeout(() => {
-                    hero.focus();
-                    hero.removeAttribute('tabindex');
-                }, 300);
+            const targetId = link.getAttribute('href');
+            const targetSection = document.querySelector(targetId);
+            
+            if (targetSection) {
+                const headerHeight = 80;
+                const targetPosition = targetSection.offsetTop - headerHeight - 20;
+                
+                if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                    window.scrollTo(0, targetPosition);
+                } else {
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        });
+    });
+}
+
+function initializeMobileOptimizations() {
+    const isMobile = window.innerWidth <= 768 || 'ontouchstart' in window;
+    
+    if (isMobile) {
+        cursorActive = false;
+        if (cursor) {
+            cursor.style.display = 'none';
+        }
+        
+        document.body.style.touchAction = 'manipulation';
+        
+        const inputs = document.querySelectorAll('input, textarea');
+        inputs.forEach(input => {
+            if (input.type !== 'file') {
+                input.style.fontSize = '16px';
             }
         });
     }
 }
 
-// Reset form function
+function initializeScrollAnimations() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return;
+    }
+
+    const animatedElements = document.querySelectorAll('.fade-in, .slide-up');
+    
+    const animationObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-in');
+                animationObserver.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    });
+    
+    animatedElements.forEach(element => {
+        animationObserver.observe(element);
+    });
+}
+
+function initializePerformanceMonitoring() {
+    console.log('Performance monitoring initialized');
+}
+
 function resetForm() {
     if (registrationForm) {
         registrationForm.style.display = 'block';
         registrationForm.reset();
         
-        // Reset form validation states
-        const formFields = registrationForm.querySelectorAll('input, textarea');
-        formFields.forEach(field => {
-            field.setAttribute('aria-invalid', 'false');
-            field.removeAttribute('aria-describedby');
-        });
-        
-        // Hide error messages
-        const errorMessages = registrationForm.querySelectorAll('.error-message');
-        errorMessages.forEach(error => {
-            error.textContent = '';
-            error.classList.add('sr-only');
-        });
-        
-        // Hide success message
         if (formSuccess) {
             formSuccess.classList.add('hidden');
         }
     }
 }
-
-// ===== UNIFIED VIDEO OVERLAY SYSTEM - Clean Implementation =====
-function initializeUnifiedVideoSystem() {
-    console.log('Initializing unified video system...');
-    
-    // Find all videos in the document
-    const allVideos = document.querySelectorAll('video');
-    
-    allVideos.forEach(video => {
-        // Skip if already processed
-        if (video.dataset.unifiedOverlay === 'initialized') return;
-        video.dataset.unifiedOverlay = 'initialized';
-        
-        // Ensure video has proper attributes
-        video.muted = true;
-        video.loop = true;
-        video.autoplay = true;
-        video.playsInline = true;
-        video.setAttribute('playsinline', '');
-        video.setAttribute('webkit-playsinline', '');
-        
-        // Find or create video container
-        let container = video.closest('.media');
-        if (!container) {
-            container = video.parentElement;
-            if (!container) return;
-        }
-        
-        // Ensure container has relative positioning
-        const computedStyle = getComputedStyle(container);
-        if (computedStyle.position === 'static') {
-            container.style.position = 'relative';
-        }
-        
-        // Remove any existing overlays to avoid duplicates
-        const existingOverlays = container.querySelectorAll('.video-overlay, .video-control, .media-control');
-        existingOverlays.forEach(overlay => overlay.remove());
-        
-        // Create new unified overlay
-        const overlay = document.createElement('div');
-        overlay.className = 'video-overlay';
-        
-        const playButton = document.createElement('button');
-        playButton.className = 'video-ctl';
-        playButton.type = 'button';
-        playButton.setAttribute('aria-label', 'Play with sound');
-        playButton.setAttribute('aria-pressed', 'false');
-        playButton.tabIndex = 0;
-        
-        // Add play icon
-        playButton.innerHTML = `
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M8 5v14l11-7z"/>
-            </svg>
-        `;
-        
-        overlay.appendChild(playButton);
-        container.appendChild(overlay);
-        
-        // Video state management
-        let isVideoMuted = true;
-        
-        function updateOverlayState() {
-            if (isVideoMuted) {
-                overlay.classList.remove('is-hidden');
-                playButton.setAttribute('aria-label', 'Play with sound');
-                playButton.setAttribute('aria-pressed', 'false');
-            } else {
-                overlay.classList.add('is-hidden');
-                playButton.setAttribute('aria-label', 'Mute video');
-                playButton.setAttribute('aria-pressed', 'true');
-            }
-        }
-        
-        function toggleVideoSound() {
-            if (!userHasInteracted) {
-                console.log('Video sound requires user interaction first');
-                return;
-            }
-            
-            if (isVideoMuted) {
-                // Mute all other videos first
-                document.querySelectorAll('video').forEach(otherVideo => {
-                    if (otherVideo !== video && !otherVideo.muted) {
-                        otherVideo.muted = true;
-                        // Update other overlays
-                        const otherContainer = otherVideo.closest('.media') || otherVideo.parentElement;
-                        if (otherContainer) {
-                            const otherOverlay = otherContainer.querySelector('.video-overlay');
-                            if (otherOverlay) {
-                                otherOverlay.classList.remove('is-hidden');
-                                const otherButton = otherOverlay.querySelector('.video-ctl');
-                                if (otherButton) {
-                                    otherButton.setAttribute('aria-label', 'Play with sound');
-                                    otherButton.setAttribute('aria-pressed', 'false');
-                                }
-                            }
-                        }
-                    }
-                });
-                
-                // Lower background music volume when video audio is active
-                if (siteAudio && audioEnabled && !siteAudio.muted) {
-                    siteAudio.volume = 0.1;
-                }
-                
-                // Unmute this video
-                video.muted = false;
-                isVideoMuted = false;
-                
-                // Ensure video is playing
-                video.play().catch(() => {
-                    console.log('Video play failed');
-                });
-                
-                console.log('Video sound enabled');
-            } else {
-                // Mute this video
-                video.muted = true;
-                isVideoMuted = true;
-                
-                // Restore background music volume
-                if (siteAudio && audioEnabled && !siteAudio.muted) {
-                    siteAudio.volume = 0.25;
-                }
-                
-                console.log('Video sound disabled');
-            }
-            
-            updateOverlayState();
-        }
-        
-        // Event listeners
-        playButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleVideoSound();
-        });
-        
-        playButton.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                toggleVideoSound();
-            }
-        });
-        
-        // Also allow clicking directly on video
-        video.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (userHasInteracted) {
-                toggleVideoSound();
-            }
-        });
-        
-        // Handle video events
-        video.addEventListener('volumechange', () => {
-            isVideoMuted = video.muted;
-            updateOverlayState();
-        });
-        
-        video.addEventListener('loadeddata', () => {
-            updateOverlayState();
-        });
-        
-        video.addEventListener('error', (e) => {
-            console.error('Video loading error:', e);
-            playButton.disabled = true;
-            playButton.setAttribute('aria-label', 'Video unavailable');
-            overlay.style.background = 'rgba(128, 128, 128, 0.5)';
-        });
-        
-        // Initialize state
-        updateOverlayState();
-        
-        console.log('Video overlay initialized for:', video.src || 'video element');
-    });
-}
-
-// Initialize the unified system when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    // ...existing critical path initialization...
-    
-    // Add unified video system to deferred initialization
-    requestIdleCallback(() => {
-        initializeChakraCursor();
-        initializeUnifiedVideoSystem();
-        initializeTestimonialCarousel();
-        initializeRegistrationModal();
-        initializeLogoClick();
-        initializeNavigation();
-        initializeMobileOptimizations();
-        initializePerformanceMonitoring();
-    });
-    
-    // ...existing code...
-});
-
-// Watch for dynamically added videos
-const unifiedVideoObserver = new MutationObserver((mutations) => {
-    let hasNewVideos = false;
-    mutations.forEach(mutation => {
-        mutation.addedNodes.forEach(node => {
-            if (node.nodeType === 1) { // Element node
-                if (node.tagName === 'VIDEO' || node.querySelector('video')) {
-                    hasNewVideos = true;
-                }
-            }
-        });
-    });
-    
-    if (hasNewVideos) {
-        console.log('New videos detected, reinitializing...');
-        initializeUnifiedVideoSystem();
-    }
-});
-
-// Start observing
-unifiedVideoObserver.observe(document.body, {
-    childList: true,
-    subtree: true
-});
-
-// Safety check on window load to ensure all videos are properly initialized
-window.addEventListener('load', () => {
-    // Ensure all videos start muted
-    document.querySelectorAll('video').forEach(video => {
-        if (!video.muted) {
-            video.muted = true;
-        }
-    });
-    
-    // Initialize any videos that might have been missed
-    setTimeout(() => {
-        initializeUnifiedVideoSystem();
-    }, 100);
-});
-
-// Add video overlay intersection observer for auto-play/pause
-const videoIntersectionObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        const video = entry.target;
-        
-        if (entry.isIntersecting) {
-            // Video is in viewport - ensure it's playing
-            if (video.paused) {
-                video.play().catch(() => {
-                    console.log('Video autoplay prevented');
-                });
-            }
-        } else {
-            // Video is out of viewport - pause to save resources
-            if (!video.paused) {
-                video.pause();
-            }
-        }
-    });
-}, {
-    threshold: 0.5,
-    rootMargin: '100px 0px 100px 0px'
-});
-
-// Initialize video observer for all videos
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-        document.querySelectorAll('video').forEach(video => {
-            videoIntersectionObserver.observe(video);
-        });
-    }, 1000);
-});
