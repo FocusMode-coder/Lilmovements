@@ -2737,3 +2737,131 @@ section {
 .media {
     position: relative;
 }
+
+/* Video Overlay Styles - Unified System */
+.video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: inherit;
+    z-index: 2;
+}
+
+.video-overlay.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.video-overlay:hover {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.video-ctl {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    color: #000;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.video-ctl:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: scale(1.1);
+}
+
+.video-ctl:focus {
+    outline: 2px solid #007AFF;
+    outline-offset: 2px;
+}
+
+.video-ctl svg {
+    width: 24px;
+    height: 24px;
+    margin-left: 2px; /* Optical centering for play button */
+}
+
+/* Ensure all videos have proper container positioning */
+.media {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Video element styles for proper looping and autoplay */
+video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Performance optimizations for video */
+video[loop] {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+}
+
+/* Media control styles (existing buttons) */
+.media-control {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.6);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    z-index: 3;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.media-control:hover {
+    background: rgba(0, 0, 0, 0.8);
+    transform: scale(1.1);
+}
+
+.media-control.active {
+    background: rgba(255, 255, 255, 0.9);
+    color: #000;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .video-ctl {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .video-ctl svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .media-control {
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
+}

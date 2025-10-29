@@ -65,16 +65,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Defer non-critical functionality
     requestIdleCallback(() => {
         initializeChakraCursor();
-        initializeV916Videos();
+        initializeUnifiedVideoSystem(); // Use ONLY this video system
         initializeTestimonialCarousel();
         initializeRegistrationModal();
         initializeLogoClick();
         initializeNavigation();
         initializeMobileOptimizations();
         initializePerformanceMonitoring();
-        
-        // Add unified video system
-        initializeUnifiedVideoSystem();
     });
     
     // Defer scroll animations until after initial load
@@ -365,147 +362,6 @@ function hexToRgb(hex) {
         g: parseInt(result[2], 16),
         b: parseInt(result[3], 16)
     } : null;
-}
-
-// Universal 9:16 Video System - Updated for new .media wrapper pattern
-function initializeV916Videos() {
-    // Use throttled observer for better performance
-    const v916Observer = createThrottledObserver((entries) => {
-        entries.forEach(entry => {
-            const video = entry.target;
-            if (entry.isIntersecting) {
-                // Use requestAnimationFrame for smooth playback
-                requestAnimationFrame(() => {
-                    if (video.readyState >= 2) { // HAVE_CURRENT_DATA
-                        video.play().catch(() => {
-                            console.log('V916 video autoplay prevented');
-                        });
-                    }
-                });
-            } else {
-                // Pause videos that are out of viewport to save resources
-                if (!video.paused) {
-                    video.pause();
-                }
-            }
-        });
-    }, {
-        threshold: 0.5,
-        rootMargin: '100px 0px 100px 0px'
-    });
-
-    // Observe all .v916 videos with the new .media wrapper pattern
-    v916Videos.forEach(video => {
-        // Set default attributes as specified
-        video.setAttribute('muted', '');
-        video.setAttribute('playsinline', '');
-        video.setAttribute('loop', '');
-        video.setAttribute('preload', 'metadata');
-        
-        // Observe for play/pause
-        v916Observer.observe(video);
-        
-        // Find the media container and control
-        const mediaContainer = video.closest('.media');
-        const mediaControl = mediaContainer?.querySelector('.media-control');
-        
-        if (mediaControl) {
-            // Enhanced ARIA attributes
-            mediaControl.setAttribute('aria-pressed', 'false');
-            mediaControl.setAttribute('tabindex', '0');
-            
-            // Click handler for center overlay control
-            const handleControlClick = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                if (userHasInteracted) {
-                    toggleVideoSound(video);
-                }
-            };
-            
-            mediaControl.addEventListener('click', handleControlClick);
-            
-            // Keyboard support
-            mediaControl.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    handleControlClick(e);
-                }
-            });
-        }
-        
-        // Also handle video clicks
-        video.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (userHasInteracted) {
-                toggleVideoSound(video);
-            }
-        });
-        
-        // Error handling
-        video.addEventListener('error', (e) => {
-            console.error('Video loading error:', e);
-            video.setAttribute('aria-label', 'Video unavailable');
-            if (mediaControl) {
-                mediaControl.disabled = true;
-                mediaControl.setAttribute('aria-label', 'Video unavailable');
-            }
-        });
-    });
-}
-
-function toggleVideoSound(targetVideo) {
-    if (!userHasInteracted) return;
-    
-    const targetContainer = targetVideo.closest('.media');
-    const targetControl = targetContainer?.querySelector('.media-control');
-    
-    if (targetVideo.muted) {
-        // Mute all other videos first
-        v916Videos.forEach(video => {
-            if (video !== targetVideo) {
-                video.muted = true;
-                const container = video.closest('.media');
-                const control = container?.querySelector('.media-control');
-                if (control) {
-                    control.textContent = '🔊'; // Muted state - show speaker icon
-                    control.classList.remove('active');
-                    control.setAttribute('aria-pressed', 'false');
-                }
-            }
-        });
-        
-        // Lower background music when video audio is active
-        if (siteAudio && audioEnabled && !siteAudio.muted) {
-            siteAudio.volume = 0.1;
-        }
-        
-        // Unmute target video
-        targetVideo.muted = false;
-        if (targetControl) {
-            targetControl.textContent = '🔇'; // Playing with sound - show muted speaker icon
-            targetControl.classList.add('active');
-            targetControl.setAttribute('aria-pressed', 'true');
-        }
-        
-        console.log('Video sound enabled');
-    } else {
-        // Mute target video
-        targetVideo.muted = true;
-        if (targetControl) {
-            targetControl.textContent = '🔊'; // Muted state - show speaker icon
-            targetControl.classList.remove('active');
-            targetControl.setAttribute('aria-pressed', 'false');
-        }
-        
-        // Restore background music volume
-        if (siteAudio && audioEnabled && !siteAudio.muted) {
-            siteAudio.volume = 0.25;
-        }
-        
-        console.log('Video sound disabled');
-    }
 }
 
 // Enhanced testimonial carousel with Apple-style peek functionality and fixed video overlay controls
@@ -1548,263 +1404,6 @@ function resetForm() {
     }
 }
 
-// ===== Global Video PLAY Button System =====
-function initializeGlobalVideoOverlays() {
-    const allVideos = document.querySelectorAll('video');
-    
-    allVideos.forEach(video => {
-        // Skip if already initialized
-        if (video.dataset.overlayInitialized) return;
-        video.dataset.overlayInitialized = 'true';
-        
-        // Set video attributes for proper autoplay
-        video.setAttribute('playsinline', '');
-        video.setAttribute('webkit-playsinline', '');
-        video.loop = true;
-        video.muted = true;
-        video.autoplay = true;
-        video.preload = 'metadata';
-        
-        // Find or create container
-        const container = video.closest('.media') || video.parentElement;
-        if (!container) return;
-        
-        // Ensure container is positioned relatively
-        const computedStyle = getComputedStyle(container);
-        if (computedStyle.position === 'static') {
-            container.style.position = 'relative';
-        }
-        
-        // Create overlay if it doesn't exist
-        let overlay = container.querySelector('.video-overlay');
-        if (!overlay) {
-            overlay = document.createElement('div');
-            overlay.className = 'video-overlay';
-            overlay.innerHTML = `
-                <button class="video-ctl" aria-pressed="false" aria-label="Play with sound" tabindex="0">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M8 5v14l11-7z"/>
-                    </svg>
-                </button>
-            `;
-            container.appendChild(overlay);
-        }
-        
-        const playButton = overlay.querySelector('.video-ctl');
-        
-        // Toggle sound function
-        function toggleVideoSound() {
-            if (!userHasInteracted) {
-                console.log('Video sound requires user interaction first');
-                return;
-            }
-            
-            if (video.muted) {
-                // Mute all other videos first
-                document.querySelectorAll('video').forEach(otherVideo => {
-                    if (otherVideo !== video && !otherVideo.muted) {
-                        otherVideo.muted = true;
-                        const otherContainer = otherVideo.closest('.media') || otherVideo.parentElement;
-                        const otherOverlay = otherContainer?.querySelector('.video-overlay');
-                        if (otherOverlay) {
-                            otherOverlay.classList.remove('is-hidden');
-                            const otherButton = otherOverlay.querySelector('.video-ctl');
-                            if (otherButton) {
-                                otherButton.setAttribute('aria-pressed', 'false');
-                                otherButton.setAttribute('aria-label', 'Play with sound');
-                            }
-                        }
-                    }
-                });
-                
-                // Lower background music volume if playing
-                if (siteAudio && audioEnabled && !siteAudio.muted) {
-                    siteAudio.volume = 0.1;
-                }
-                
-                // Unmute this video and hide overlay
-                video.muted = false;
-                overlay.classList.add('is-hidden');
-                playButton.setAttribute('aria-pressed', 'true');
-                playButton.setAttribute('aria-label', 'Mute video');
-                
-                // Ensure video is playing
-                video.play().catch(() => {
-                    console.log('Video play failed');
-                });
-                
-                console.log('Video sound enabled');
-            } else {
-                // Mute this video and show overlay
-                video.muted = true;
-                overlay.classList.remove('is-hidden');
-                playButton.setAttribute('aria-pressed', 'false');
-                playButton.setAttribute('aria-label', 'Play with sound');
-                
-                // Restore background music volume
-                if (siteAudio && audioEnabled && !siteAudio.muted) {
-                    siteAudio.volume = 0.25;
-                }
-                
-                console.log('Video sound disabled');
-            }
-        }
-        
-        // Event listeners
-        playButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleVideoSound();
-        });
-        
-        playButton.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                toggleVideoSound();
-            }
-        });
-        
-        // Also allow clicking on video itself to toggle
-        video.addEventListener('click', (e) => {
-            e.preventDefault();
-            toggleVideoSound();
-        });
-        
-        // Initial state - overlay visible, video muted
-        overlay.classList.remove('is-hidden');
-        playButton.setAttribute('aria-pressed', 'false');
-        playButton.setAttribute('aria-label', 'Play with sound');
-        
-        // Error handling
-        video.addEventListener('error', (e) => {
-            console.error('Video loading error:', e);
-            playButton.disabled = true;
-            playButton.setAttribute('aria-label', 'Video unavailable');
-        });
-    });
-}
-
-// Initialize video overlays when DOM is ready and when new videos are added
-document.addEventListener('DOMContentLoaded', initializeGlobalVideoOverlays);
-
-// Watch for dynamically added videos
-const videoObserverForOverlays = new MutationObserver(() => {
-    initializeGlobalVideoOverlays();
-});
-
-videoObserverForOverlays.observe(document.body, {
-    childList: true,
-    subtree: true
-});
-
-// Safety check on window load to ensure all videos are muted initially
-window.addEventListener('load', () => {
-    document.querySelectorAll('video').forEach(video => {
-        if (!video.muted) {
-            video.muted = true;
-            const container = video.closest('.media') || video.parentElement;
-            const overlay = container?.querySelector('.video-overlay');
-            if (overlay) {
-                overlay.classList.remove('is-hidden');
-            }
-        }
-    });
-});
-
-// Unified Video Overlay System - Centered PLAY Button for All Videos
-function initializeVideoOverlays() {
-    const videos = document.querySelectorAll('video');
-    
-    videos.forEach(video => {
-        // Ensure video container has relative positioning
-        const container = video.closest('.media') || video.parentElement;
-        if (container && !container.style.position) {
-            container.style.position = 'relative';
-        }
-        
-        // Create overlay structure
-        const overlay = document.createElement('div');
-        overlay.className = 'video-overlay';
-        
-        const playButton = document.createElement('button');
-        playButton.className = 'video-ctl';
-        playButton.setAttribute('aria-label', 'Toggle video sound');
-        playButton.innerHTML = `
-            <svg viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z"/>
-            </svg>
-        `;
-        
-        overlay.appendChild(playButton);
-        container.appendChild(overlay);
-        
-        // Handle video state
-        function updateVideoState() {
-            if (video.muted) {
-                overlay.classList.remove('is-hidden');
-                playButton.innerHTML = `
-                    <svg viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z"/>
-                    </svg>
-                `;
-                playButton.setAttribute('aria-label', 'Unmute video');
-            } else {
-                overlay.classList.add('is-hidden');
-                playButton.innerHTML = `
-                    <svg viewBox="0 0 24 24">
-                        <path d="M11 5L6 9H2v6h4l5 4V5z"/>
-                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
-                    </svg>
-                `;
-                playButton.setAttribute('aria-label', 'Mute video');
-            }
-        }
-        
-        // Click handler for play button
-        playButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // Toggle mute state
-            video.muted = !video.muted;
-            updateVideoState();
-            
-            // Ensure video is playing
-            if (video.paused) {
-                video.play().catch(console.warn);
-            }
-        });
-        
-        // Show overlay when video is hovered
-        container.addEventListener('mouseenter', () => {
-            if (!video.muted) {
-                overlay.classList.remove('is-hidden');
-            }
-        });
-        
-        container.addEventListener('mouseleave', () => {
-            if (!video.muted) {
-                overlay.classList.add('is-hidden');
-            }
-        });
-        
-        // Initialize state
-        video.muted = true; // Start muted
-        updateVideoState();
-        
-        // Handle video events
-        video.addEventListener('loadeddata', updateVideoState);
-        video.addEventListener('volumechange', updateVideoState);
-    });
-}
-
-// Initialize when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeVideoOverlays);
-} else {
-    initializeVideoOverlays();
-}
-
 // ===== UNIFIED VIDEO OVERLAY SYSTEM - Clean Implementation =====
 function initializeUnifiedVideoSystem() {
     console.log('Initializing unified video system...');
@@ -1989,16 +1588,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add unified video system to deferred initialization
     requestIdleCallback(() => {
         initializeChakraCursor();
-        initializeV916Videos();
+        initializeUnifiedVideoSystem();
         initializeTestimonialCarousel();
         initializeRegistrationModal();
         initializeLogoClick();
         initializeNavigation();
         initializeMobileOptimizations();
         initializePerformanceMonitoring();
-        
-        // Add unified video system
-        initializeUnifiedVideoSystem();
     });
     
     // ...existing code...
@@ -2042,4 +1638,37 @@ window.addEventListener('load', () => {
     setTimeout(() => {
         initializeUnifiedVideoSystem();
     }, 100);
+});
+
+// Add video overlay intersection observer for auto-play/pause
+const videoIntersectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        const video = entry.target;
+        
+        if (entry.isIntersecting) {
+            // Video is in viewport - ensure it's playing
+            if (video.paused) {
+                video.play().catch(() => {
+                    console.log('Video autoplay prevented');
+                });
+            }
+        } else {
+            // Video is out of viewport - pause to save resources
+            if (!video.paused) {
+                video.pause();
+            }
+        }
+    });
+}, {
+    threshold: 0.5,
+    rootMargin: '100px 0px 100px 0px'
+});
+
+// Initialize video observer for all videos
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        document.querySelectorAll('video').forEach(video => {
+            videoIntersectionObserver.observe(video);
+        });
+    }, 1000);
 });
