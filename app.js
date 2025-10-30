@@ -103,37 +103,87 @@ function initializeVideoSystem() {
         let overlay = container.querySelector('.video-overlay');
         let playButton = container.querySelector('.video-play-btn');
         
-        // Create overlay and play button if they don't exist
-        if (!overlay) {
-            overlay = document.createElement('div');
-            overlay.className = 'video-overlay';
-            container.appendChild(overlay);
-            
-            playButton = document.createElement('button');
-            playButton.className = 'video-play-btn';
-            playButton.setAttribute('type', 'button');
-            playButton.setAttribute('aria-label', 'Play with sound');
-            
-            // Create play icon SVG
-            playButton.innerHTML = `
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M8 5v14l11-7z"/>
-                </svg>
-            `;
-            
-            overlay.appendChild(playButton);
+        let _overlay = overlay;
+        let _playBtn = playButton;
+
+        // Create overlay/button if missing (hardens against markup issues)
+        if (!_overlay) {
+          _overlay = document.createElement('div');
+          _overlay.className = 'video-overlay';
+          container.appendChild(_overlay);
         }
-        
-        // Video state
+        if (!_playBtn) {
+          _playBtn = document.createElement('button');
+          _playBtn.className = 'video-play-btn';
+          _playBtn.setAttribute('aria-label', 'Play with sound');
+          _playBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+          _overlay.appendChild(_playBtn);
+        }
+
+        // Local state for this video
         let isVideoMuted = true;
-        
+
+        // Helpers to show/hide overlay
+        function showOverlay(){
+          _overlay.style.opacity = '1';
+          _overlay.style.pointerEvents = 'auto';
+          _playBtn.setAttribute('aria-label','Play with sound');
+        }
+        function hideOverlay(){
+          _overlay.style.opacity = '0';
+          _overlay.style.pointerEvents = 'none';
+          _playBtn.setAttribute('aria-label','Mute video');
+        }
+
+        // Toggle sound — ensure ONLY one video plays with audio at a time
+        function toggleVideoSound(){
+          if(!userHasInteracted) return;
+
+          if(isVideoMuted){
+            // Mute any currently active video with audio
+            if(activeVideoAudio && activeVideoAudio !== video){
+              activeVideoAudio.muted = true;
+              const activeContainer = activeVideoAudio.closest('.category-video, .daily-video, .backstage-visual, .testimonial-item, .hero-video-container');
+              const activeOverlay = activeContainer?.querySelector('.video-overlay');
+              if(activeOverlay){
+                activeOverlay.style.opacity = '1';
+                activeOverlay.style.pointerEvents = 'auto';
+              }
+            }
+
+            // Duck background music if it is playing
+            if(siteAudio && audioEnabled && !siteAudio.muted) siteAudio.volume = 0.1;
+
+            video.muted = false;
+            isVideoMuted = false;
+            activeVideoAudio = video;
+            hideOverlay();
+            video.play().catch(()=>{});
+          }else{
+            video.muted = true;
+            isVideoMuted = true;
+            activeVideoAudio = null;
+            showOverlay();
+
+            // Restore bg music volume if needed
+            if(siteAudio && audioEnabled && !siteAudio.muted) siteAudio.volume = 0.3;
+          }
+        }
+
+        // Wire up button interactions
+        _playBtn.addEventListener('click',(e)=>{ e.preventDefault(); e.stopPropagation(); toggleVideoSound(); });
+        _playBtn.addEventListener('keydown',(e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggleVideoSound(); } });
+
+        // Initial state: show overlay (all videos start muted)
+        showOverlay();
+
         // Start video when it loads
         video.addEventListener('loadeddata', () => {
             video.play().catch(() => {
                 console.log('Video autoplay prevented');
             });
         });
-        
+
         // Ensure video loops properly
         video.addEventListener('ended', () => {
             video.currentTime = 0;
@@ -141,99 +191,7 @@ function initializeVideoSystem() {
                 console.log('Video replay failed');
             });
         });
-        
-        // Play button functionality
-        function showOverlay() {
-            overlay.style.opacity = '1';
-            overlay.style.pointerEvents = 'auto';
-            overlay.classList.remove('hidden');
-            playButton.setAttribute('aria-label', 'Play with sound');
-        }
-        
-        function hideOverlay() {
-            overlay.style.opacity = '0';
-            overlay.style.pointerEvents = 'none';
-            overlay.classList.add('hidden');
-            playButton.setAttribute('aria-label', 'Mute video');
-        }
-        
-        function toggleVideoSound() {
-            if (!userHasInteracted) {
-                console.log('Video sound requires user interaction');
-                return;
-            }
-            
-            if (isVideoMuted) {
-                // Mute any currently active video and show its overlay
-                if (activeVideoAudio && activeVideoAudio !== video) {
-                    activeVideoAudio.muted = true;
-                    const activeContainer = activeVideoAudio.closest('.category-video, .daily-video, .backstage-visual, .testimonial-item, .hero-video-container');
-                    if (activeContainer) {
-                        const activeOverlay = activeContainer.querySelector('.video-overlay');
-                        if (activeOverlay) {
-                            activeOverlay.style.opacity = '1';
-                            activeOverlay.style.pointerEvents = 'auto';
-                            activeOverlay.classList.remove('hidden');
-                        }
-                    }
-                }
-                
-                // Lower background music when video audio is active
-                if (siteAudio && audioEnabled && !siteAudio.muted) {
-                    siteAudio.volume = 0.1;
-                }
-                
-                // Unmute this video
-                video.muted = false;
-                isVideoMuted = false;
-                activeVideoAudio = video;
-                hideOverlay();
-                
-                // Ensure video is playing
-                video.play().catch(() => {
-                    console.log('Video play failed');
-                });
-                
-            } else {
-                // Mute this video
-                video.muted = true;
-                isVideoMuted = true;
-                activeVideoAudio = null;
-                showOverlay();
-                
-                // Restore background music volume
-                if (siteAudio && audioEnabled && !siteAudio.muted) {
-                    siteAudio.volume = 0.3;
-                }
-            }
-        }
-        
-        // Event listeners for play button
-        playButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleVideoSound();
-        });
-        
-        playButton.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                toggleVideoSound();
-            }
-        });
-        
-        // Also allow clicking the overlay itself to toggle sound
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleVideoSound();
-            }
-        });
-        
-        // Initialize with overlay showing
-        showOverlay();
-        
+
         // Auto-pause videos when out of viewport (performance optimization)
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
