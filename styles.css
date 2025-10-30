@@ -391,6 +391,8 @@ section {
     border-radius: inherit;
     z-index: 2;
     opacity: 1;
+    /* Ensure perfect centering */
+    box-sizing: border-box;
 }
 
 .video-overlay:hover {
@@ -415,6 +417,11 @@ section {
     cursor: pointer;
     transition: var(--transition-fast);
     backdrop-filter: blur(10px);
+    /* Ensure perfect centering within the overlay */
+    position: relative;
+    margin: 0;
+    padding: 0;
+    flex-shrink: 0;
 }
 
 .video-play-btn:hover {
@@ -426,6 +433,29 @@ section {
     width: 24px;
     height: 24px;
     margin-left: 2px;
+    /* Ensure SVG is perfectly centered */
+    display: block;
+    position: relative;
+}
+
+/* Ensure all video containers have proper positioning for overlays */
+.category-video,
+.daily-video,
+.backstage-visual,
+.testimonial-item,
+.hero-video-container {
+    position: relative;
+}
+
+/* Additional overlay positioning fixes for edge cases */
+.category-video .video-overlay,
+.daily-video .video-overlay,
+.backstage-visual .video-overlay,
+.testimonial-item .video-overlay {
+    /* Ensure overlay covers the entire video area */
+    inset: 0;
+    width: 100%;
+    height: 100%;
 }
 
 /* Daily Toolbox */
@@ -741,11 +771,15 @@ section {
     .video-play-btn {
         width: 50px;
         height: 50px;
+        /* Maintain perfect centering on mobile */
+        flex-shrink: 0;
     }
     
     .video-play-btn svg {
         width: 20px;
         height: 20px;
+        /* Adjust margin for smaller button on mobile */
+        margin-left: 1px;
     }
 }
 
