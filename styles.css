@@ -825,3 +825,24 @@ a:focus-visible {
         transform: translateY(0);
     }
 }
+
+/* Full-cover overlay centered content */
+.video-overlay{
+  position:absolute;
+  inset:0;                 /* cover entire container */
+  display:grid;
+  place-items:center;      /* always center the button */
+  z-index:2;
+}
+
+/* Fallback: even if overlay breaks, keep button centered */
+.category-video .video-play-btn,
+.daily-video .video-play-btn,
+.backstage-visual .video-play-btn,
+.testimonial-item .video-play-btn,
+.hero-video-container .video-play-btn{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+}
