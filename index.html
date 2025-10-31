@@ -18,12 +18,9 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Great+Vibes&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Skip link for keyboard navigation -->
-    <a href="#main-content" class="skip-link">Skip to main content</a>
-
     <!-- Site Audio Element -->
     <audio id="siteAudio" src="assets/LIL MOVEMENTS - LZK.mp3" preload="metadata" loop muted></audio>
 
@@ -53,17 +50,11 @@
 
     <!-- Hero Section - The Awakening -->
     <section class="hero awakening" id="home">
-        <div class="hero-video-container">
-            <video class="hero-background-video" muted playsinline loop preload="metadata" autoplay>
-                <source src="assets/LM_recap1.mp4" type="video/mp4">
-                <p>Your browser doesn't support video playback.</p>
-            </video>
-            <div class="hero-overlay"></div>
-        </div>
-        
+        <!-- Removed hero video container for clean title presentation -->
         <div class="hero-content">
-            <h1 class="hero-title">Movement as mastery.</h1>
-            <p class="hero-subtitle">50 ways to awaken your body, your organs, and your energy.</p>
+            <img src="assets/Lil Movements (LOGO).png" alt="Lil Movements Logo" class="hero-logo">
+            <h1 class="hero-title">Lil Movements</h1>
+            <p class="hero-subtitle">Remember who you are through motion, music, and breath.</p>
             
             <div class="hero-actions">
                 <button class="btn-primary watch-series" type="button">
@@ -91,8 +82,8 @@
                         <img src="assets/Lily_BIO_picture.png" alt="Lily portrait" class="lily-portrait">
                     </div>
                     <div class="about-text">
-                        <h2 id="about-heading">About Lil Movements</h2>
-                        <p class="philosophy-main">Lil Movements is a conscious body practice that connects movement with inner awareness. It's not about dance — it's about reprogramming how we move, breathe, and awaken.</p>
+                        <h2 id="about-heading">Our Mission</h2>
+                        <p class="philosophy-main">Lil Movements is a community of conscious movement guided by Lily. Our mission is to bring people back to nature through dance, qigong, and yoga-inspired motion. We believe movement heals the mind, balances the body, and connects the soul no matter your age, ability, or background. Every class supports a greater cause, with monthly donations to local organizations helping children, women, and mental wellness centers.</p>
                         <p class="philosophy-subtitle">Rooted in energy, breath, and rhythm.</p>
                         <blockquote class="featured-quote">
                             "It's not about being better than someone else. It's about being better than before."
@@ -105,22 +96,24 @@
         <!-- The Movement Series Section -->
         <section id="series" class="movement-series" aria-labelledby="series-heading">
             <div class="container">
-                <h2 id="series-heading">The Movement Series</h2>
-                <p class="series-tagline">Fifty moments. Fifty awakenings. One practice.</p>
+                <h2 id="series-heading">Classes</h2>
+                <p class="series-tagline">Classes are filmed outdoors at the beach, in the mountains, under the trees to remind us that nature moves with us. Each session blends yoga, qigong, and dance into simple techniques that awaken the liver, thyroid, and inner rhythm of your body. From gentle breathing to powerful motion, every video is a doorway to reconnecting with your energy.</p>
                 
                 <div class="series-grid">
                     <!-- Energy & Breath -->
                     <div class="series-category">
                         <div class="category-video">
-                            <video class="category-preview" muted playsinline loop preload="metadata">
-                                <source src="assets/Lily_dancing1.mp4" type="video/mp4">
-                            </video>
-                            <div class="video-overlay">
-                                <button class="video-play-btn" aria-label="Play Energy & Breath series">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M8 5v14l11-7z"/>
-                                    </svg>
-                                </button>
+                            <div class="video-inner">
+                                <video class="category-preview" muted playsinline loop preload="metadata">
+                                    <source src="assets/Lily_dancing1.mp4" type="video/mp4">
+                                </video>
+                                <div class="video-overlay">
+                                    <button class="video-play-btn" aria-label="Play Energy & Breath series">
+                                        <svg viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M8 5v14l11-7z"/>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <h3>Energy & Breath</h3>
@@ -130,15 +123,17 @@
                     <!-- Organs & Vitality -->
                     <div class="series-category">
                         <div class="category-video">
-                            <video class="category-preview" muted playsinline loop preload="metadata">
-                                <source src="assets/Lily_dancing2.mp4" type="video/mp4">
-                            </video>
-                            <div class="video-overlay">
-                                <button class="video-play-btn" aria-label="Play Organs & Vitality series">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M8 5v14l11-7z"/>
-                                    </svg>
-                                </button>
+                            <div class="video-inner">
+                                <video class="category-preview" muted playsinline loop preload="metadata">
+                                    <source src="assets/Lily_dancing2.mp4" type="video/mp4">
+                                </video>
+                                <div class="video-overlay">
+                                    <button class="video-play-btn" aria-label="Play Organs & Vitality series">
+                                        <svg viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M8 5v14l11-7z"/>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <h3>Organs & Vitality</h3>
@@ -148,15 +143,17 @@
                     <!-- Feminine Power -->
                     <div class="series-category">
                         <div class="category-video">
-                            <video class="category-preview" muted playsinline loop preload="metadata">
-                                <source src="assets/LM_recap1.mp4" type="video/mp4">
-                            </video>
-                            <div class="video-overlay">
-                                <button class="video-play-btn" aria-label="Play Feminine Power series">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M8 5v14l11-7z"/>
-                                    </svg>
-                                </button>
+                            <div class="video-inner">
+                                <video class="category-preview" muted playsinline loop preload="metadata">
+                                    <source src="assets/LM_recap1.mp4" type="video/mp4">
+                                </video>
+                                <div class="video-overlay">
+                                    <button class="video-play-btn" aria-label="Play Feminine Power series">
+                                        <svg viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M8 5v14l11-7z"/>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <h3>Feminine Power</h3>
@@ -166,15 +163,17 @@
                     <!-- Rhythm & Awareness -->
                     <div class="series-category">
                         <div class="category-video">
-                            <video class="category-preview" muted playsinline loop preload="metadata">
-                                <source src="assets/LM_recap2.mp4" type="video/mp4">
-                            </video>
-                            <div class="video-overlay">
-                                <button class="video-play-btn" aria-label="Play Rhythm & Awareness series">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M8 5v14l11-7z"/>
-                                    </svg>
-                                </button>
+                            <div class="video-inner">
+                                <video class="category-preview" muted playsinline loop preload="metadata">
+                                    <source src="assets/LM_recap2.mp4" type="video/mp4">
+                                </video>
+                                <div class="video-overlay">
+                                    <button class="video-play-btn" aria-label="Play Rhythm & Awareness series">
+                                        <svg viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M8 5v14l11-7z"/>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <h3>Rhythm & Awareness</h3>
@@ -183,7 +182,7 @@
 
                     <!-- Integration & Stillness -->
                     <div class="series-category">
-                        <div class="category-video">
+                        <div class="video-inner">
                             <video class="category-preview" muted playsinline loop preload="metadata">
                                 <source src="assets/Lilinteview.mp4" type="video/mp4">
                             </video>
@@ -208,15 +207,17 @@
                 <h2 id="toolbox-heading">Toolbox for Today</h2>
                 <div class="toolbox-content">
                     <div class="daily-video">
-                        <video class="featured-daily" muted playsinline loop preload="metadata">
-                            <source src="assets/howgotstarted.mp4" type="video/mp4">
-                        </video>
-                        <div class="video-overlay">
-                            <button class="video-play-btn" aria-label="Play today's featured video">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M8 5v14l11-7z"/>
-                                </svg>
-                            </button>
+                        <div class="video-inner">
+                            <video class="featured-daily" muted playsinline loop preload="metadata">
+                                <source src="assets/howgotstarted.mp4" type="video/mp4">
+                            </video>
+                            <div class="video-overlay">
+                                <button class="video-play-btn" aria-label="Play today's featured video">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M8 5v14l11-7z"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div class="toolbox-text">
@@ -230,22 +231,24 @@
         <!-- Backstage / Support Section -->
         <section id="backstage" class="backstage" aria-labelledby="backstage-heading">
             <div class="container">
-                <h2 id="backstage-heading">Behind Lil Movements</h2>
+                <h2 id="backstage-heading">Meet Lily</h2>
                 <div class="backstage-content">
                     <div class="backstage-visual">
-                        <video class="backstage-video" muted playsinline loop preload="metadata">
-                            <source src="assets/Lilinteview.mp4" type="video/mp4">
-                        </video>
-                        <div class="video-overlay">
-                            <button class="video-play-btn" aria-label="Play backstage video">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M8 5v14l11-7z"/>
-                                </svg>
-                            </button>
+                        <div class="video-inner">
+                            <video class="backstage-video" muted playsinline loop preload="metadata">
+                                <source src="assets/Lilinteview.mp4" type="video/mp4">
+                            </video>
+                            <div class="video-overlay">
+                                <button class="video-play-btn" aria-label="Play backstage video">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M8 5v14l11-7z"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div class="backstage-text">
-                        <p>Every movement you see is supported by a team of visionaries — from creative direction to filming, everything is crafted with intention and love.</p>
+                        <p>Lily is an artist, dancer, and founder of Lil Movements. Her work blends movement therapy, art, and spiritual wellness into an empowering experience for all bodies. Her classes were born in an art gallery in Santa Barbara a place where creativity and healing met for the first time. Today, Lil Movements continues that spirit: art in motion, energy in balance, and the joy of being alive.</p>
                     </div>
                 </div>
             </div>
@@ -254,7 +257,8 @@
         <!-- Community Testimonials Section -->
         <section id="community" class="community-testimonials" aria-labelledby="community-heading">
             <div class="container">
-                <h2 id="community-heading">In their own words</h2>
+                <h2 id="community-heading">Community</h2>
+                <p class="community-description">Every month, Lil Movements supports a different cause from children's programs to women's shelters and mental health centers. By joining our classes, you're helping others move toward healing too.</p>
                 <div class="testimonials-carousel">
                     <div class="carousel-container">
                         <button class="carousel-chevron carousel-prev" aria-label="Previous testimonial" type="button">
@@ -353,18 +357,22 @@
         </section>
     </main>
 
-    <!-- Footer -->
+    <!-- Footer Negro - Exactamente como en la imagen -->
     <footer class="footer" role="contentinfo">
         <div class="container">
-            <div class="footer-content">
-                <div class="footer-left">
-                    <p>© 2025 Lil Movements</p>
-                </div>
-                <div class="footer-right">
-                    <a href="https://www.instagram.com/lilmovements.official/" target="_blank" rel="noopener">Instagram</a>
-                    <a href="https://www.youtube.com/@lilmovements" target="_blank" rel="noopener">YouTube</a>
-                    <a href="mailto:contact@lilmovements.com">Email</a>
-                </div>
+            <div class="footer-main-text">
+                <p>Join the community: create new connections in your body, let go of what doesn't serve you, and keep what brings you back to center.</p>
+            </div>
+            
+            <div class="footer-navigation">
+                <a href="#about">Our Mission</a>
+                <a href="#backstage">Meet Lily</a>
+                <a href="#series">Classes</a>
+                <a href="#community">Community</a>
+            </div>
+            
+            <div class="footer-copyright">
+                <p>© 2025 Lil Movements. All rights reserved.</p>
             </div>
         </div>
     </footer>
@@ -374,6 +382,9 @@
             aria-label="Toggle background music" 
             aria-pressed="false"
             type="button">♪</button>
+
+    <!-- Music Popup -->
+    <div class="music-popup" id="musicPopup">Click to hear Lil movements Song</div>
 
     <script src="app.js" defer></script>
 </body>

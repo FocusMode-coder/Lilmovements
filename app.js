@@ -45,14 +45,62 @@ function initializeUserInteraction() {
 
 // Global audio system
 function initializeGlobalAudio() {
-    if (!siteAudio || !playMusicBtn) return;
+    console.log('Initializing audio system...');
+    console.log('siteAudio element:', siteAudio);
+    console.log('playMusicBtn element:', playMusicBtn);
+    
+    if (!siteAudio || !playMusicBtn) {
+        console.error('Missing audio elements!');
+        return;
+    }
+
+    // Test if audio file loads
+    siteAudio.addEventListener('loadeddata', () => {
+        console.log('Audio file loaded successfully');
+    });
+    
+    siteAudio.addEventListener('error', (e) => {
+        console.error('Audio file failed to load:', e);
+    });
 
     siteAudio.volume = 0.3;
     siteAudio.muted = true;
+    
+    console.log('Audio src:', siteAudio.src);
+    console.log('Audio initial state - muted:', siteAudio.muted, 'volume:', siteAudio.volume);
+
+    // Get popup element
+    const musicPopup = document.getElementById('musicPopup');
+
+    // Show popup on page load
+    if (musicPopup) {
+        setTimeout(() => {
+            musicPopup.classList.add('show');
+            setTimeout(() => {
+                musicPopup.classList.remove('show');
+            }, 3000); // Hide after 3 seconds
+        }, 1000); // Show after 1 second of page load
+    }
+
+    // Show popup on hover
+    playMusicBtn.addEventListener('mouseenter', () => {
+        if (musicPopup) {
+            musicPopup.classList.add('show');
+        }
+    });
+
+    // Hide popup on mouse leave
+    playMusicBtn.addEventListener('mouseleave', () => {
+        if (musicPopup) {
+            musicPopup.classList.remove('show');
+        }
+    });
 
     playMusicBtn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
+        
+        console.log('Music button clicked! userHasInteracted:', userHasInteracted);
         
         if (!userHasInteracted) {
             console.log('Audio requires user interaction first');
@@ -64,35 +112,63 @@ function initializeGlobalAudio() {
 }
 
 function toggleBackgroundMusic() {
+    console.log('=== TOGGLE MUSIC DEBUG ===');
+    console.log('audioEnabled:', audioEnabled);
+    console.log('siteAudio.paused:', siteAudio.paused);
+    console.log('siteAudio.muted:', siteAudio.muted);
+    console.log('siteAudio.readyState:', siteAudio.readyState);
+    console.log('siteAudio.src:', siteAudio.src);
+    
     if (!audioEnabled || siteAudio.paused) {
+        console.log('→ Attempting to START music...');
+        
+        // Reset and play
         siteAudio.muted = false;
+        siteAudio.currentTime = 0;
+        
+        console.log('Before play - muted:', siteAudio.muted, 'currentTime:', siteAudio.currentTime);
+        
         siteAudio.play().then(() => {
             audioEnabled = true;
             playMusicBtn.classList.add('active');
             playMusicBtn.setAttribute('aria-pressed', 'true');
-        }).catch(console.warn);
+            console.log('✅ Music STARTED successfully');
+            console.log('Playing state - paused:', siteAudio.paused, 'volume:', siteAudio.volume);
+        }).catch((error) => {
+            console.error('❌ Music play FAILED:', error);
+            console.error('Error details:', error.name, error.message);
+        });
     } else {
+        console.log('→ Attempting to STOP music...');
         siteAudio.pause();
         siteAudio.muted = true;
         audioEnabled = false;
         playMusicBtn.classList.remove('active');
         playMusicBtn.setAttribute('aria-pressed', 'false');
+        console.log('✅ Music STOPPED');
     }
+    
+    console.log('=== END DEBUG ===');
 }
 
-// Unified video system with perfect muted loop autoplay and sound toggle
+// Enhanced video initialization to fix playback issues
 function initializeVideoSystem() {
     videos.forEach(video => {
         if (video.dataset.videoInitialized === 'true') return;
         video.dataset.videoInitialized = 'true';
         
-        // Ensure proper video attributes for autoplay and looping
+        // Force video attributes for better compatibility
         video.muted = true;
         video.loop = true;
         video.autoplay = true;
         video.playsInline = true;
         video.setAttribute('playsinline', '');
         video.setAttribute('webkit-playsinline', '');
+        video.setAttribute('muted', '');
+        video.preload = 'metadata';
+        
+        // Force load the video
+        video.load();
         
         // Find the container for this video
         const container = video.closest('.category-video, .daily-video, .backstage-visual, .testimonial-item, .hero-video-container');
@@ -132,57 +208,83 @@ function initializeVideoSystem() {
         function hideOverlay(){
           _overlay.style.opacity = '0';
           _overlay.style.pointerEvents = 'none';
-          _playBtn.setAttribute('aria-label','Mute video');
+          _playBtn.setAttribute('aria-label','Mute video sound');
         }
 
-        // Toggle sound — ensure ONLY one video plays with audio at a time
-        function toggleVideoSound(){
+        // FIXED: Simple 2-state toggle - Video keeps playing, only audio changes
+        function toggleVideoPlayback(){
           if(!userHasInteracted) return;
 
+          // If video is playing and muted - ENABLE SOUND (remove overlay)
           if(isVideoMuted){
-            // Mute any currently active video with audio
+            // Mute any other active video with audio
             if(activeVideoAudio && activeVideoAudio !== video){
               activeVideoAudio.muted = true;
               const activeContainer = activeVideoAudio.closest('.category-video, .daily-video, .backstage-visual, .testimonial-item, .hero-video-container');
               const activeOverlay = activeContainer?.querySelector('.video-overlay');
+              const activeBtn = activeContainer?.querySelector('.video-play-btn');
               if(activeOverlay){
                 activeOverlay.style.opacity = '1';
                 activeOverlay.style.pointerEvents = 'auto';
               }
+              if(activeBtn){
+                activeBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+                activeBtn.setAttribute('aria-label', 'Play with sound');
+              }
             }
 
-            // Duck background music if it is playing
+            // Duck background music
             if(siteAudio && audioEnabled && !siteAudio.muted) siteAudio.volume = 0.1;
 
+            // ENABLE SOUND - video keeps playing
             video.muted = false;
             isVideoMuted = false;
             activeVideoAudio = video;
             hideOverlay();
-            video.play().catch(()=>{});
+            _playBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.5 9L15 12l-3.5 3v-2.5H8V11.5h3.5z"/></svg>';
+            _playBtn.setAttribute('aria-label', 'Mute video sound');
+            
+            // Ensure video continues playing
+            if(video.paused) video.play().catch(()=>{});
           }else{
+            // If video has sound - MUTE IT (but keep playing, show overlay)
             video.muted = true;
             isVideoMuted = true;
             activeVideoAudio = null;
             showOverlay();
+            _playBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+            _playBtn.setAttribute('aria-label', 'Play with sound');
 
-            // Restore bg music volume if needed
+            // Restore background music volume
             if(siteAudio && audioEnabled && !siteAudio.muted) siteAudio.volume = 0.3;
+            
+            // IMPORTANT: Keep video playing even when muted
+            if(video.paused) video.play().catch(()=>{});
           }
         }
 
         // Wire up button interactions
-        _playBtn.addEventListener('click',(e)=>{ e.preventDefault(); e.stopPropagation(); toggleVideoSound(); });
-        _playBtn.addEventListener('keydown',(e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggleVideoSound(); } });
+        _playBtn.addEventListener('click',(e)=>{ e.preventDefault(); e.stopPropagation(); toggleVideoPlayback(); });
+        _playBtn.addEventListener('keydown',(e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggleVideoPlayback(); } });
 
         // Initial state: show overlay (all videos start muted)
         showOverlay();
 
-        // Start video when it loads
-        video.addEventListener('loadeddata', () => {
-            video.play().catch(() => {
-                console.log('Video autoplay prevented');
-            });
-        });
+        // Multiple attempts to start video playback
+        const tryPlay = () => {
+            if (video.readyState >= 2) {
+                video.play().catch((error) => {
+                    console.log('Video autoplay blocked, will retry on user interaction:', error);
+                });
+            }
+        };
+
+        // Try to play when video loads
+        video.addEventListener('loadeddata', tryPlay);
+        video.addEventListener('canplay', tryPlay);
+        
+        // Immediate play attempt
+        setTimeout(tryPlay, 100);
 
         // Ensure video loops properly
         video.addEventListener('ended', () => {
@@ -389,4 +491,96 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
+// CLEAN VIDEO AUDIO TOGGLE - Added at end to override any conflicts
+document.addEventListener('DOMContentLoaded', () => {
+    // Wait a bit for other initializations to complete
+    setTimeout(() => {
+        const allVideos = document.querySelectorAll('video');
+        
+        allVideos.forEach(video => {
+            const container = video.closest('.category-video, .daily-video, .backstage-visual, .testimonial-item, .hero-video-container');
+            if (!container) return;
+            
+            const playBtn = container.querySelector('.video-play-btn');
+            const overlay = container.querySelector('.video-overlay');
+            
+            if (!playBtn || !overlay) return;
+            
+            // Remove any existing listeners to avoid conflicts
+            const newBtn = playBtn.cloneNode(true);
+            playBtn.parentNode.replaceChild(newBtn, playBtn);
+            
+            // Simple 2-state system
+            let hasAudio = false;
+            
+            function toggleVideoAudio() {
+                console.log('Video audio toggle, current hasAudio:', hasAudio);
+                
+                if (!hasAudio) {
+                    // ACTIVATE AUDIO
+                    
+                    // Mute all other videos first
+                    allVideos.forEach(otherVideo => {
+                        if (otherVideo !== video) {
+                            otherVideo.muted = true;
+                            const otherContainer = otherVideo.closest('.category-video, .daily-video, .backstage-visual, .testimonial-item, .hero-video-container');
+                            const otherOverlay = otherContainer?.querySelector('.video-overlay');
+                            const otherBtn = otherContainer?.querySelector('.video-play-btn');
+                            if (otherOverlay) otherOverlay.style.opacity = '1';
+                            if (otherBtn) otherBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+                        }
+                    });
+                    
+                    // Activate this video's audio
+                    video.muted = false;
+                    hasAudio = true;
+                    overlay.style.opacity = '0';
+                    newBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 7h2v10h-2V7zm4 0h2v10h-2V7z"/></svg>';
+                    
+                    console.log('Audio ENABLED for video');
+                    
+                } else {
+                    // DEACTIVATE AUDIO (but keep video playing)
+                    video.muted = true;
+                    hasAudio = false;
+                    overlay.style.opacity = '1';
+                    newBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+                    
+                    console.log('Audio DISABLED for video');
+                }
+                
+                // Ensure video keeps playing
+                if (video.paused) {
+                    video.play().catch(() => {});
+                }
+            }
+            
+            // Event listeners for play button
+            newBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleVideoAudio();
+            });
+            
+            // NEW: Event listener for clicking anywhere on the video
+            video.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleVideoAudio();
+            });
+            
+            // NEW: Event listener for clicking on the overlay (but not the button)
+            overlay.addEventListener('click', (e) => {
+                // Only if clicking on overlay itself, not the button
+                if (e.target === overlay) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleVideoAudio();
+                }
+            });
+        });
+    }, 500);
+});
+
+console.log('Clean video audio toggle system loaded');
 console.log('Lil Movements website initialized successfully');
