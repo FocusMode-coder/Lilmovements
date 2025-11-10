@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* LMV Color Tokens */
+  --lmv-bg: #FAFAF7;        /* off-white warm */
+  --lmv-base: #0E0E0E;      /* primary text */
+  --lmv-muted: #EDEBE6;     /* soft section bg */
+  --lmv-accent: #111111;    /* primary buttons, headings */
+  --lmv-accentQuiet: #7A7A7A;
+  --lmv-success: #1EAC7B;
+}
+
+html,
+body {
+  background-color: var(--lmv-bg);
+  color: var(--lmv-base);
+  scroll-behavior: smooth;
+}
+
+/* Accessibility: Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-black text-white rounded-2xl px-5 py-2 font-medium transition-colors;
+    @apply hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent rounded-2xl px-5 py-2 font-medium transition-colors;
+    border: 1px solid rgba(14, 14, 14, 0.15);
+    @apply hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2;
+  }
+}
