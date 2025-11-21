@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer";
-import { CookieConsent } from "@/components/CookieConsent";
-import GtmLoader from "@/(consent)/GtmLoader";
-import { AuthProvider } from "@/components/AuthProvider";
+import CookieConsent from "@/components/CookieConsent";
+import GtmLoader from "./(consent)/GtmLoader";
+import AuthProvider from "@/components/AuthProvider";
 import ScrollTexture from "@/components/ScrollTexture";
 import GoldenEdgeLines from "@/components/GoldenEdgeLines";
 
