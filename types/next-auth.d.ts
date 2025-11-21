@@ -20,3 +20,10 @@ declare module "next-auth/jwt" {
     id: string
   }
 }
+
+// Google Tag Manager types
+declare global {
+  interface Window {
+    dataLayer: any[];
+  }
+}
