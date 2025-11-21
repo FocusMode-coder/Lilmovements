@@ -7,7 +7,7 @@ interface GtmLoaderProps {
 }
 
 export default function GtmLoader({ gtmId }: GtmLoaderProps) {
-  const id = gtmId || process.env.NEXT_PUBLIC_GTM_ID;
+  const id = gtmId || process.NEXT_PUBLIC_GTM_ID;
   if (!id) return null;
   return (
     <Script

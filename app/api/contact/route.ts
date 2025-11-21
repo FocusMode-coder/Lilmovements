@@ -31,17 +31,17 @@ export async function POST(request: NextRequest) {
 
     // Get email configuration from environment variables
     const emailConfig = {
-      host: process.env.EMAIL_HOST,
-      port: parseInt(process.env.EMAIL_PORT || '587'),
-      secure: process.env.EMAIL_SECURE === 'true',
+      host: process.EMAIL_HOST,
+      port: parseInt(process.EMAIL_PORT || '587'),
+      secure: process.EMAIL_SECURE === 'true',
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: process.EMAIL_USER,
+        pass: process.EMAIL_PASS,
       },
     };
 
-    const emailFrom = process.env.EMAIL_FROM;
-    const emailTo = process.env.EMAIL_TO;
+    const emailFrom = process.EMAIL_FROM;
+    const emailTo = process.EMAIL_TO;
 
     // Validate environment variables
     if (!emailConfig.host || !emailConfig.auth.user || !emailConfig.auth.pass || !emailFrom || !emailTo) {

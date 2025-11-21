@@ -17,7 +17,7 @@ A Next.js website for Lil Movements dance classes with user authentication and s
    npm install
    ```
 
-2. Set up your environment variables in `.env.local`:
+2. Set up your environment variables in `.local`:
    ```
    DATABASE_URL="postgresql://username:password@localhost:5432/lilmovements"
    NEXTAUTH_SECRET="your-secret-here"
