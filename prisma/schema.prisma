@@ -1,13 +1,38 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+// ========================================
+// PRISMA SETUP INSTRUCTIONS
+// ========================================
+// 
+// FIRST TIME SETUP (run these commands locally):
+// 
+// 1. Create your first migration:
+//    npx prisma migrate dev --name init_users
+// 
+// 2. Generate the Prisma client:
+//    npx prisma generate
+// 
+// 3. Commit and push the prisma/migrations folder that gets created
+// 
+// FOR RENDER DEPLOYMENT:
+// - Set DATABASE_URL environment variable to your PostgreSQL connection string
+// - Use build command: npm install && npm run migrate:deploy && npm run build
+// - Use start command: npm start
+// 
+// USEFUL COMMANDS:
+// - npm run migrate:dev     # Create and apply new migration (local dev)
+// - npm run migrate:deploy  # Apply existing migrations (production)
+// - npm run db:generate     # Regenerate Prisma client after schema changes
+// ========================================
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // Enums
