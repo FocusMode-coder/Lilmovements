@@ -3,44 +3,44 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { VideoModal } from './VideoModal';
+import VideoModal from './VideoModal';
 import Link from 'next/link';
 
 export default function Hero() {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
 
-  // Standardized fade-in animation - consistent with other components
+  // Fast, subtle animations - content appears quickly
   const fadeInUp = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 10 },
     visible: { 
       opacity: 1, 
       y: 0, 
       transition: { 
-        duration: 0.6, 
+        duration: 0.3, 
         ease: "easeOut" 
       } 
     }
   };
 
-  // Staggered children for sequential reveals
+  // Quick staggered reveals with minimal delay
   const staggerContainer = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.1
+        staggerChildren: 0.1,
+        delayChildren: 0
       }
     }
   };
 
   const staggerItem = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 10 },
     visible: { 
       opacity: 1, 
       y: 0, 
       transition: { 
-        duration: 0.6, 
+        duration: 0.3, 
         ease: "easeOut" 
       } 
     }
@@ -96,11 +96,11 @@ export default function Hero() {
             </p>
           </motion.div>
 
-          {/* CTA Button - Standardized styling */}
+          {/* CTA Button - Fixed to match other primary buttons */}
           <motion.div variants={staggerItem}>
             <Link
               href="/join"
-              className="bg-white text-gray-900 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-all duration-200 transform hover:scale-105 shadow-lg"
+              className="bg-gray-900 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-800 transition-all duration-200 transform hover:scale-105 shadow-lg"
             >
               Become a member
             </Link>
@@ -111,7 +111,7 @@ export default function Hero() {
       <VideoModal
         isOpen={isVideoOpen}
         onClose={() => setIsVideoOpen(false)}
-        videoSrc="/assets/Lilinteview.mp4"
+        src="/assets/Lilinteview.mp4"
       />
     </section>
   );

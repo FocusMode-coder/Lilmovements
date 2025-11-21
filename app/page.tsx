@@ -1,47 +1,47 @@
 'use client';
 
-import { Hero } from '@/components/Hero';
+import Hero from '@/components/Hero';
 import { motion } from 'framer-motion';
 import { ContactForm } from '@/components/ContactForm';
-import { VideoModal } from '@/components/VideoModal';
+import VideoModal from '@/components/VideoModal';
 import { useState } from 'react';
 import Link from 'next/link';
 
 export default function Home() {
   const [videoModal, setVideoModal] = useState<string | null>(null);
 
-  // Standardized fade-in animation - smooth but quick, runs only once
+  // Fast, subtle fade-in - content appears quickly
   const fadeInUp = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 10 },
     visible: { 
       opacity: 1, 
       y: 0, 
       transition: { 
-        duration: 0.6, 
+        duration: 0.3, 
         ease: "easeOut" 
       } 
     }
   };
 
-  // Staggered children animations for lists/grids
+  // Quick staggered animations with minimal delay
   const staggerContainer = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2
+        staggerChildren: 0.05,
+        delayChildren: 0
       }
     }
   };
 
   const staggerItem = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 10 },
     visible: { 
       opacity: 1, 
       y: 0, 
       transition: { 
-        duration: 0.5, 
+        duration: 0.3, 
         ease: "easeOut" 
       } 
     }
@@ -55,7 +55,7 @@ export default function Home() {
       <motion.section
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
+        viewport={{ once: true, amount: 0.1 }}
         variants={fadeInUp}
         className="py-20 px-6 bg-white"
       >
@@ -65,7 +65,7 @@ export default function Home() {
               variants={staggerContainer}
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
+              viewport={{ once: true, amount: 0.1 }}
             >
               <motion.h2
                 variants={staggerItem}
@@ -98,7 +98,7 @@ export default function Home() {
             <motion.div
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
+              viewport={{ once: true, amount: 0.1 }}
               variants={fadeInUp}
               className="relative"
             >
@@ -116,7 +116,7 @@ export default function Home() {
       <motion.section
         initial="hidden" 
         whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
+        viewport={{ once: true, amount: 0.1 }}
         variants={fadeInUp}
         className="py-20 px-6 bg-gray-50"
       >
@@ -124,7 +124,7 @@ export default function Home() {
           <motion.h2
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
+            viewport={{ once: true, amount: 0.1 }}
             variants={fadeInUp}
             className="text-4xl md:text-5xl font-bold text-center mb-16 text-gray-900"
           >
@@ -135,7 +135,7 @@ export default function Home() {
             variants={staggerContainer}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
+            viewport={{ once: true, amount: 0.1 }}
             className="grid md:grid-cols-3 gap-8"
           >
             {[
@@ -192,7 +192,7 @@ export default function Home() {
       <motion.section
         initial="hidden"
         whileInView="visible" 
-        viewport={{ once: true, amount: 0.2 }}
+        viewport={{ once: true, amount: 0.1 }}
         variants={fadeInUp}
         className="py-20 px-6 bg-white"
       >
@@ -200,7 +200,7 @@ export default function Home() {
           <motion.h2
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
+            viewport={{ once: true, amount: 0.1 }}
             variants={fadeInUp}
             className="text-4xl md:text-5xl font-bold text-center mb-16 text-gray-900"
           >
@@ -211,7 +211,7 @@ export default function Home() {
             variants={staggerContainer}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
+            viewport={{ once: true, amount: 0.1 }}
             className="grid md:grid-cols-2 gap-8"
           >
             {[
@@ -251,7 +251,7 @@ export default function Home() {
       <motion.section
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
+        viewport={{ once: true, amount: 0.1 }}
         variants={fadeInUp}
         className="py-20 px-6 bg-gray-900 text-white"
       >
@@ -259,7 +259,7 @@ export default function Home() {
           <motion.h2
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
+            viewport={{ once: true, amount: 0.1 }}
             variants={fadeInUp}
             className="text-4xl md:text-5xl font-bold text-center mb-16"
           >
@@ -269,7 +269,7 @@ export default function Home() {
           <motion.div
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
+            viewport={{ once: true, amount: 0.1 }}
             variants={fadeInUp}
             className="max-w-2xl mx-auto"
           >
@@ -283,7 +283,7 @@ export default function Home() {
         <VideoModal
           isOpen={!!videoModal}
           onClose={() => setVideoModal(null)}
-          videoSrc={videoModal}
+          src={videoModal}
         />
       )}
     </div>
