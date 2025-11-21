@@ -1,45 +1,27 @@
 "use client";
 
-import { useEffect } from "react";
+import Script from "next/script";
 
-const GTM_ID = "GTM-XXXXXXX"; // Replace with your actual GTM ID
-
-function getCookie(name: string) {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
-  return match ? decodeURIComponent(match[2]) : null;
+interface GtmLoaderProps {
+  gtmId?: string;
 }
 
-export default function GtmLoader() {
-  useEffect(() => {
-    const consent = getCookie("cookie_consent");
-    
-    if (consent === "accepted") {
-      // Inject GTM script only when consent is accepted
-      const gtmScript = document.createElement("script");
-      gtmScript.src = `https://www.googletagmanager.com/gtm.js?id=${GTM_ID}`;
-      gtmScript.async = true;
-      document.head.appendChild(gtmScript);
-
-      // Initialize dataLayer
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({
-        'gtm.start': new Date().getTime(),
-        event: 'gtm.js'
-      });
-
-      // Add noscript fallback to body
-      const noscript = document.createElement("noscript");
-      const iframe = document.createElement("iframe");
-      iframe.src = `https://www.googletagmanager.com/ns.html?id=${GTM_ID}`;
-      iframe.height = "0";
-      iframe.width = "0";
-      iframe.style.display = "none";
-      iframe.style.visibility = "hidden";
-      noscript.appendChild(iframe);
-      document.body.appendChild(noscript);
-    }
-  }, []);
-
-  return null; // This component doesn't render anything
+export default function GtmLoader({ gtmId }: GtmLoaderProps) {
+  const id = gtmId || process.env.NEXT_PUBLIC_GTM_ID;
+  if (!id) return null;
+  return (
+    <Script
+      id="gtm-loader"
+      strategy="afterInteractive"
+      dangerouslySetInnerHTML={{
+        __html: `
+          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l;'';j.async=true;j.src=
+          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+          })(window,document,'script','dataLayer','${id}');
+        `,
+      }}
+    />
+  );
 }

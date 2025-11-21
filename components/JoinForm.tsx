@@ -1,249 +1,195 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { signIn } from 'next-auth/react';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+
+type JoinFormMode = "create" | "signin";
 
 interface JoinFormProps {
-  mode?: 'join' | 'signin';
+  initialMode?: JoinFormMode;
 }
 
-export function JoinForm({ mode = 'join' }: JoinFormProps) {
-  const [isSignIn, setIsSignIn] = useState(mode === 'signin');
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    membershipPlan: 'basic'
-  });
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut" },
+  },
+};
 
-  // Fast, smooth animations
-  const fadeInVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
-  };
+const JoinForm: React.FC<JoinFormProps> = ({ initialMode = "create" }) => {
+  const [mode, setMode] = useState<JoinFormMode>(initialMode);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError('');
-    setSuccess('');
+    setError(null);
+    setIsSubmitting(true);
 
     try {
-      if (isSignIn) {
-        // Sign in logic
-        const result = await signIn('credentials', {
-          email: formData.email,
-          password: formData.password,
-          redirect: false,
-        });
+      const endpoint =
+        mode === "create" ? "/api/register" : "/api/auth/signin";
 
-        if (result?.error) {
-          setError('Invalid email or password');
-        } else {
-          setSuccess('Welcome back!');
-          window.location.href = '/dashboard';
-        }
-      } else {
-        // Registration logic
-        if (formData.password !== formData.confirmPassword) {
-          setError('Passwords do not match');
-          return;
-        }
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: fullName,
+          email,
+          password,
+        }),
+      });
 
-        const response = await fetch('/api/register', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            name: formData.name,
-            email: formData.email,
-            password: formData.password,
-            membershipPlan: formData.membershipPlan,
-          }),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          setError(data.error || 'Registration failed');
-        } else {
-          setSuccess('Account created successfully! Please sign in.');
-          setIsSignIn(true);
-          setFormData({ ...formData, password: '', confirmPassword: '' });
-        }
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        const message =
+          (data && (data.error || data.message)) ||
+          "There was a problem. Please try again.";
+        throw new Error(message);
       }
-    } catch (error) {
-      setError('Something went wrong. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+      // TODO: redirect to dashboard or refresh page
+      // for now just clear the form
+      setFullName("");
+      setEmail("");
+      setPassword("");
+    } catch (err: any) {
+      setError(err.message || "Unexpected error.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8">
       <motion.div
+        className="mx-auto max-w-md bg-white shadow-xl rounded-3xl px-8 py-10 border border-neutral-100"
+        variants={fadeInUp}
         initial="hidden"
-        animate="visible" 
-        variants={fadeInVariants}
-        transition={{ duration: 0.3 }}
-        className="max-w-md mx-auto"
+        animate="visible"
       >
-        <div className="text-center mb-8">
-          <motion.h2
-            variants={fadeInVariants}
-            transition={{ duration: 0.3, delay: 0.1 }}
-            className="text-3xl font-bold text-gray-900"
-          >
-            {isSignIn ? 'Welcome Back' : 'Join Lil Movements'}
-          </motion.h2>
-          <motion.p
-            variants={fadeInVariants}
-            transition={{ duration: 0.3, delay: 0.2 }}
-            className="mt-2 text-gray-600"
-          >
-            {isSignIn ? 'Sign in to your account' : 'Start your movement journey today'}
-          </motion.p>
-        </div>
-
-        <motion.div
-          variants={fadeInVariants}
-          transition={{ duration: 0.3, delay: 0.2 }}
-          className="bg-white shadow-xl rounded-2xl p-8 border border-gray-100"
-        >
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {!isSignIn && (
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name
-                </label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  required={!isSignIn}
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all duration-200"
-                  placeholder="Enter your full name"
-                />
-              </div>
-            )}
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all duration-200"
-                placeholder="Enter your email"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                value={formData.password}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all duration-200"
-                placeholder="Enter your password"
-              />
-            </div>
-
-            {!isSignIn && (
-              <>
-                <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                    Confirm Password
-                  </label>
-                  <input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type="password"
-                    required={!isSignIn}
-                    value={formData.confirmPassword}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all duration-200"
-                    placeholder="Confirm your password"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="membershipPlan" className="block text-sm font-medium text-gray-700 mb-2">
-                    Membership Plan
-                  </label>
-                  <select
-                    id="membershipPlan"
-                    name="membershipPlan"
-                    value={formData.membershipPlan}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all duration-200"
-                  >
-                    <option value="basic">Basic - $29/month</option>
-                    <option value="premium">Premium - $49/month</option>
-                    <option value="unlimited">Unlimited - $79/month</option>
-                  </select>
-                </div>
-              </>
-            )}
-
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                {error}
-              </div>
-            )}
-
-            {success && (
-              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-                {success}
-              </div>
-            )}
-
-            {/* Standardized button styling */}
+        <div className="flex justify-center mb-6">
+          <div className="inline-flex rounded-full bg-neutral-100 p-1">
             <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-gray-900 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105 shadow-lg"
+              type="button"
+              onClick={() => setMode("create")}
+              className={`px-4 py-1 text-sm font-medium rounded-full transition ${
+                mode === "create"
+                  ? "bg-black text-white"
+                  : "text-neutral-500"
+              }`}
             >
-              {isLoading ? 'Processing...' : (isSignIn ? 'Sign In' : 'Create Account')}
+              Create Account
             </button>
-
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={() => setIsSignIn(!isSignIn)}
-                className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
-              >
-                {isSignIn ? "Don't have an account? Join now" : 'Already have an account? Sign in'}
-              </button>
-            </div>
-          </form>
+            <button
+              type="button"
+              onClick={() => setMode("signin")}
+              className={`px-4 py-1 text-sm font-medium rounded-full transition ${
+                mode === "signin"
+                  ? "bg-black text-white"
+                  : "text-neutral-500"
+              }`}
+            >
+              Sign In
+            </button>
+          </div>
         </div>
+
+        <h1 className="text-2xl font-semibold text-center text-neutral-900">
+          Join Lil Movements
+        </h1>
+        <p className="mt-2 text-sm text-center text-neutral-500">
+          {mode === "create"
+            ? "Create your account to start your movement journey."
+            : "Sign in to continue your practice."}
+        </p>
+
+        <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+          {mode === "create" && (
+            <div>
+              <label
+                htmlFor="fullName"
+                className="block text-sm font-medium text-neutral-700"
+              >
+                Full Name
+              </label>
+              <input
+                id="fullName"
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+                className="mt-1 block w-full rounded-xl border-neutral-200 shadow-sm focus:border-black focus:ring-black px-3 py-2 bg-neutral-50"
+              />
+            </div>
+          )}
+
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-neutral-700"
+            >
+              Email Address
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="mt-1 block w-full rounded-xl border-neutral-200 shadow-sm focus:border-black focus:ring-black px-3 py-2 bg-neutral-50"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-neutral-700"
+            >
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="mt-1 block w-full rounded-xl border-neutral-200 shadow-sm focus:border-black focus:ring-black px-3 py-2 bg-neutral-50"
+            />
+          </div>
+
+          {error && (
+            <p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl px-3 py-2">
+              {error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full mt-4 inline-flex justify-center items-center rounded-full border border-black px-4 py-2 text-sm font-medium text-black hover:bg-black hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting
+              ? mode === "create"
+                ? "Creating account..."
+                : "Signing in..."
+              : mode === "create"
+              ? "Create Account"
+              : "Sign In"}
+          </button>
+        </form>
+
+        <p className="mt-4 text-xs text-center text-neutral-400">
+          By continuing, you agree to our Terms and Privacy Policy.
+        </p>
       </motion.div>
     </div>
   );
-}
+};
+
+export default JoinForm;
