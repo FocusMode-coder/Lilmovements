@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* minimal base to avoid FOUC */
+html, body, #__next { height: 100%; }
+
+/* Premium background gradient */
+body {
+  background: linear-gradient(180deg, #fffaf6 0%, #ffffff 50%, #ffffff 100%);
+  min-height: 100vh;
+}
+
+/* Subtle floating animation */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-float {
+  animation: float 8s ease-in-out infinite;
+}
+
+/* Glassmorphism utilities */
+.glass {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}

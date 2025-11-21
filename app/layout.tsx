@@ -1,9 +1,12 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import './styles/globals.css'
+import './globals.css'
 import Footer from '@/components/Footer'
 import CookieConsent from '@/components/CookieConsent'
 import GtmLoader from '@/app/(consent)/GtmLoader'
+import AuthProvider from '@/components/AuthProvider'
+import ScrollTexture from '@/components/ScrollTexture'
+import GoldenEdgeLines from '@/components/GoldenEdgeLines'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -21,10 +24,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} min-h-screen bg-white text-neutral-900 antialiased`}>
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <CookieConsent />
-        <GtmLoader />
+        <AuthProvider>
+          <ScrollTexture />
+          <GoldenEdgeLines />
+          <GtmLoader />
+          {children}
+          <Footer />
+          <CookieConsent />
+        </AuthProvider>
       </body>
     </html>
   )
