@@ -10,10 +10,41 @@ import Link from 'next/link';
 export default function Home() {
   const [videoModal, setVideoModal] = useState<string | null>(null);
 
-  // Fast, subtle animations with immediate visibility
-  const fadeInVariants = {
+  // Standardized fade-in animation - smooth but quick, runs only once
+  const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      transition: { 
+        duration: 0.6, 
+        ease: "easeOut" 
+      } 
+    }
+  };
+
+  // Staggered children animations for lists/grids
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      }
+    }
+  };
+
+  const staggerItem = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      transition: { 
+        duration: 0.5, 
+        ease: "easeOut" 
+      } 
+    }
   };
 
   return (
@@ -25,48 +56,50 @@ export default function Home() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
-        variants={fadeInVariants}
-        transition={{ duration: 0.3 }}
+        variants={fadeInUp}
         className="py-20 px-6 bg-white"
       >
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+            >
               <motion.h2
-                variants={fadeInVariants}
-                transition={{ duration: 0.3, delay: 0.1 }}
+                variants={staggerItem}
                 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900"
               >
                 Meet Lily
               </motion.h2>
               <motion.p
-                variants={fadeInVariants}
-                transition={{ duration: 0.3, delay: 0.2 }}
+                variants={staggerItem}
                 className="text-lg text-gray-700 mb-6 leading-relaxed"
               >
                 With over a decade of experience in dance and movement therapy, 
                 Lily has helped thousands discover their inner strength through the power of movement.
               </motion.p>
               <motion.p
-                variants={fadeInVariants}
-                transition={{ duration: 0.3, delay: 0.3 }}
+                variants={staggerItem}
                 className="text-lg text-gray-700 mb-8 leading-relaxed"
               >
                 Her unique approach combines contemporary dance, mindfulness, and personal growth 
                 to create transformative experiences for students of all levels.
               </motion.p>
               <motion.button
-                variants={fadeInVariants}
-                transition={{ duration: 0.3, delay: 0.4 }}
+                variants={staggerItem}
                 onClick={() => setVideoModal('/assets/howgotstarted.mp4')}
                 className="bg-gray-900 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-800 transition-all duration-200 transform hover:scale-105 shadow-lg"
               >
                 Watch Her Story
               </motion.button>
-            </div>
+            </motion.div>
             <motion.div
-              variants={fadeInVariants}
-              transition={{ duration: 0.3, delay: 0.2 }}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              variants={fadeInUp}
               className="relative"
             >
               <img
@@ -84,20 +117,27 @@ export default function Home() {
         initial="hidden" 
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
-        variants={fadeInVariants}
-        transition={{ duration: 0.3 }}
+        variants={fadeInUp}
         className="py-20 px-6 bg-gray-50"
       >
         <div className="max-w-6xl mx-auto">
           <motion.h2
-            variants={fadeInVariants}
-            transition={{ duration: 0.3, delay: 0.1 }}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={fadeInUp}
             className="text-4xl md:text-5xl font-bold text-center mb-16 text-gray-900"
           >
             Movement Classes
           </motion.h2>
           
-          <div className="grid md:grid-cols-3 gap-8">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            className="grid md:grid-cols-3 gap-8"
+          >
             {[
               {
                 title: "Contemporary Flow",
@@ -117,8 +157,7 @@ export default function Home() {
             ].map((classItem, index) => (
               <motion.div
                 key={classItem.title}
-                variants={fadeInVariants}
-                transition={{ duration: 0.3, delay: 0.1 * (index + 1) }}
+                variants={staggerItem}
                 className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
               >
                 <div className="relative">
@@ -145,7 +184,7 @@ export default function Home() {
                 </div>
               </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </motion.section>
 
@@ -154,20 +193,27 @@ export default function Home() {
         initial="hidden"
         whileInView="visible" 
         viewport={{ once: true, amount: 0.2 }}
-        variants={fadeInVariants}
-        transition={{ duration: 0.3 }}
+        variants={fadeInUp}
         className="py-20 px-6 bg-white"
       >
         <div className="max-w-6xl mx-auto">
           <motion.h2
-            variants={fadeInVariants}
-            transition={{ duration: 0.3, delay: 0.1 }}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={fadeInUp}
             className="text-4xl md:text-5xl font-bold text-center mb-16 text-gray-900"
           >
             What Students Say
           </motion.h2>
           
-          <div className="grid md:grid-cols-2 gap-8">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            className="grid md:grid-cols-2 gap-8"
+          >
             {[
               {
                 video: "/assets/testimonio1.mp4",
@@ -182,8 +228,7 @@ export default function Home() {
             ].map((testimonial, index) => (
               <motion.div
                 key={testimonial.name}
-                variants={fadeInVariants}
-                transition={{ duration: 0.3, delay: 0.1 * (index + 1) }}
+                variants={staggerItem}
                 className="bg-gray-50 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 <video
@@ -198,7 +243,7 @@ export default function Home() {
                 </div>
               </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </motion.section>
 
@@ -207,22 +252,25 @@ export default function Home() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
-        variants={fadeInVariants}
-        transition={{ duration: 0.3 }}
+        variants={fadeInUp}
         className="py-20 px-6 bg-gray-900 text-white"
       >
         <div className="max-w-4xl mx-auto">
           <motion.h2
-            variants={fadeInVariants}
-            transition={{ duration: 0.3, delay: 0.1 }}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={fadeInUp}
             className="text-4xl md:text-5xl font-bold text-center mb-16"
           >
             Start Your Journey
           </motion.h2>
           
           <motion.div
-            variants={fadeInVariants}
-            transition={{ duration: 0.3, delay: 0.2 }}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={fadeInUp}
             className="max-w-2xl mx-auto"
           >
             <ContactForm />

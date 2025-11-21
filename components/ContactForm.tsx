@@ -23,10 +23,28 @@ export function ContactForm() {
     message: string;
   }>({ type: null, message: '' });
 
-  // Fast, smooth animations
-  const fadeInVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
+  // Standardized fade-in for form elements
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.1
+      }
+    }
+  };
+
+  const staggerItem = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      transition: { 
+        duration: 0.4, 
+        ease: "easeOut" 
+      } 
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -81,19 +99,16 @@ export function ContactForm() {
   };
 
   return (
-    <motion.div
-      initial="hidden"
-      animate="visible"
-      variants={fadeInVariants}
-      transition={{ duration: 0.3 }}
-      className="w-full max-w-2xl mx-auto"
-    >
-      <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="w-full max-w-2xl mx-auto">
+      <motion.form
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+        onSubmit={handleSubmit} 
+        className="space-y-6"
+      >
         <div className="grid md:grid-cols-2 gap-6">
-          <motion.div
-            variants={fadeInVariants}
-            transition={{ duration: 0.3, delay: 0.1 }}
-          >
+          <motion.div variants={staggerItem}>
             <label htmlFor="name" className="block text-sm font-medium text-white mb-2">
               Name *
             </label>
@@ -109,10 +124,7 @@ export function ContactForm() {
             />
           </motion.div>
 
-          <motion.div
-            variants={fadeInVariants}
-            transition={{ duration: 0.3, delay: 0.1 }}
-          >
+          <motion.div variants={staggerItem}>
             <label htmlFor="email" className="block text-sm font-medium text-white mb-2">
               Email *
             </label>
@@ -129,10 +141,7 @@ export function ContactForm() {
           </motion.div>
         </div>
 
-        <motion.div
-          variants={fadeInVariants}
-          transition={{ duration: 0.3, delay: 0.2 }}
-        >
+        <motion.div variants={staggerItem}>
           <label htmlFor="topic" className="block text-sm font-medium text-white mb-2">
             Topic
           </label>
@@ -152,10 +161,7 @@ export function ContactForm() {
           </select>
         </motion.div>
 
-        <motion.div
-          variants={fadeInVariants}
-          transition={{ duration: 0.3, delay: 0.3 }}
-        >
+        <motion.div variants={staggerItem}>
           <label htmlFor="message" className="block text-sm font-medium text-white mb-2">
             Message *
           </label>
@@ -175,7 +181,7 @@ export function ContactForm() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.3 }}
             className={`p-4 rounded-lg ${
               submitStatus.type === 'success'
                 ? 'bg-green-500/20 border border-green-500/30 text-green-300'
@@ -187,11 +193,9 @@ export function ContactForm() {
         )}
 
         <motion.div
-          variants={fadeInVariants}
-          transition={{ duration: 0.3, delay: 0.4 }}
+          variants={staggerItem}
           className="flex justify-center"
         >
-          {/* Standardized button styling */}
           <button
             type="submit"
             disabled={isSubmitting}
@@ -200,7 +204,7 @@ export function ContactForm() {
             {isSubmitting ? 'Sending...' : 'Send Message'}
           </button>
         </motion.div>
-      </form>
-    </motion.div>
+      </motion.form>
+    </div>
   );
 }
