@@ -1,191 +1,243 @@
 'use client';
 
+import { Hero } from '@/components/Hero';
+import { motion } from 'framer-motion';
+import { ContactForm } from '@/components/ContactForm';
+import { VideoModal } from '@/components/VideoModal';
 import { useState } from 'react';
-import Hero from "@/components/Hero";
-import GlassButton from "@/components/GlassButton";
-import ContactForm from "@/components/ContactForm";
-import VideoModal from "@/components/VideoModal";
-import Reveal from "@/components/Reveal";
+import Link from 'next/link';
 
-export default function Page() {
-  const [isLilyVideoOpen, setIsLilyVideoOpen] = useState(false);
+export default function Home() {
+  const [videoModal, setVideoModal] = useState<string | null>(null);
+
+  // Fast, subtle animations with immediate visibility
+  const fadeInVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+  };
 
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
+    <div className="bg-white">
       <Hero />
-
-      {/* Main Content */}
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        
-        {/* Featured Elements Section */}
-        <section id="features" className="py-16 lg:py-24">
-          <Reveal>
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-neutral-900 mb-6">
-                Core Elements
-              </h2>
-              <p className="text-lg md:text-xl text-neutral-600 max-w-2xl mx-auto leading-relaxed">
-                Discover the transformative elements that make our movement practice unique
-              </p>
+      
+      {/* About Section */}
+      <motion.section
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={fadeInVariants}
+        transition={{ duration: 0.3 }}
+        className="py-20 px-6 bg-white"
+      >
+        <div className="max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <motion.h2
+                variants={fadeInVariants}
+                transition={{ duration: 0.3, delay: 0.1 }}
+                className="text-4xl md:text-5xl font-bold mb-6 text-gray-900"
+              >
+                Meet Lily
+              </motion.h2>
+              <motion.p
+                variants={fadeInVariants}
+                transition={{ duration: 0.3, delay: 0.2 }}
+                className="text-lg text-gray-700 mb-6 leading-relaxed"
+              >
+                With over a decade of experience in dance and movement therapy, 
+                Lily has helped thousands discover their inner strength through the power of movement.
+              </motion.p>
+              <motion.p
+                variants={fadeInVariants}
+                transition={{ duration: 0.3, delay: 0.3 }}
+                className="text-lg text-gray-700 mb-8 leading-relaxed"
+              >
+                Her unique approach combines contemporary dance, mindfulness, and personal growth 
+                to create transformative experiences for students of all levels.
+              </motion.p>
+              <motion.button
+                variants={fadeInVariants}
+                transition={{ duration: 0.3, delay: 0.4 }}
+                onClick={() => setVideoModal('/assets/howgotstarted.mp4')}
+                className="bg-gray-900 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-800 transition-all duration-200 transform hover:scale-105 shadow-lg"
+              >
+                Watch Her Story
+              </motion.button>
             </div>
-          </Reveal>
-          
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <Reveal delay={0.1}>
-              <div className="rounded-3xl bg-white/60 backdrop-blur-md border border-white/70 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 p-8 text-center">
-                <h3 className="text-2xl font-semibold mb-4 text-neutral-900">Movement</h3>
-                <p className="text-neutral-600 leading-relaxed mb-6">
-                  Intentional movement patterns that build strength while honoring your body's natural wisdom.
-                </p>
-                <GlassButton 
-                  label="Watch Lily's Background Video" 
-                  onClick={() => setIsLilyVideoOpen(true)}
-                  variant="secondary" 
-                />
-              </div>
-            </Reveal>
-            
-            <Reveal delay={0.2}>
-              <div className="rounded-3xl bg-white/60 backdrop-blur-md border border-white/70 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 p-8 text-center">
-                <h3 className="text-2xl font-semibold mb-4 text-neutral-900">Breath</h3>
-                <p className="text-neutral-600 leading-relaxed mb-6">
-                  Conscious breathing techniques that anchor you in the present moment and fuel your practice.
-                </p>
-                <GlassButton label="Explore" variant="secondary" />
-              </div>
-            </Reveal>
-            
-            <Reveal delay={0.3}>
-              <div className="rounded-3xl bg-white/60 backdrop-blur-md border border-white/70 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 p-8 text-center">
-                <h3 className="text-2xl font-semibold mb-4 text-neutral-900">Music</h3>
-                <p className="text-neutral-600 leading-relaxed mb-6">
-                  Carefully curated soundscapes that enhance your movement journey and deepen connection.
-                </p>
-                <GlassButton label="Explore" variant="secondary" />
-              </div>
-            </Reveal>
-          </div>
-        </section>
-
-        {/* Daily Toolbox Section */}
-        <section className="py-16 lg:py-24">
-          <Reveal>
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-neutral-900 mb-6">
-                Daily Toolbox
-              </h2>
-              <p className="text-lg md:text-xl text-neutral-600 max-w-2xl mx-auto leading-relaxed">
-                Practical tools and practices designed to integrate seamlessly into your daily life
-              </p>
-            </div>
-          </Reveal>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            <Reveal delay={0.1}>
-              <div className="rounded-3xl bg-white/60 backdrop-blur-md border border-white/70 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 p-6">
-                <h3 className="text-xl font-semibold mb-4 text-neutral-900">Morning Activations</h3>
-                <p className="text-neutral-600 leading-relaxed">
-                  5-15 minute sequences to awaken your body and set positive intentions for the day.
-                </p>
-              </div>
-            </Reveal>
-            
-            <Reveal delay={0.2}>
-              <div className="rounded-3xl bg-white/60 backdrop-blur-md border border-white/70 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 p-6">
-                <h3 className="text-xl font-semibold mb-4 text-neutral-900">Midday Resets</h3>
-                <p className="text-neutral-600 leading-relaxed">
-                  Quick movement breaks to release tension and restore energy during busy days.
-                </p>
-              </div>
-            </Reveal>
-            
-            <Reveal delay={0.3}>
-              <div className="rounded-3xl bg-white/60 backdrop-blur-md border border-white/70 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 p-6">
-                <h3 className="text-xl font-semibold mb-4 text-neutral-900">Evening Unwind</h3>
-                <p className="text-neutral-600 leading-relaxed">
-                  Gentle practices to help you transition from day to night with ease and grace.
-                </p>
-              </div>
-            </Reveal>
-            
-            <Reveal delay={0.4}>
-              <div className="rounded-3xl bg-white/60 backdrop-blur-md border border-white/70 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 p-6">
-                <h3 className="text-xl font-semibold mb-4 text-neutral-900">Strength Building</h3>
-                <p className="text-neutral-600 leading-relaxed">
-                  Progressive movement sequences that build functional strength mindfully.
-                </p>
-              </div>
-            </Reveal>
-            
-            <Reveal delay={0.5}>
-              <div className="rounded-3xl bg-white/60 backdrop-blur-md border border-white/70 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 p-6">
-                <h3 className="text-xl font-semibold mb-4 text-neutral-900">Flexibility Flow</h3>
-                <p className="text-neutral-600 leading-relaxed">
-                  Dynamic and static stretching routines to maintain mobility and ease.
-                </p>
-              </div>
-            </Reveal>
-            
-            <Reveal delay={0.6}>
-              <div className="rounded-3xl bg-white/60 backdrop-blur-md border border-white/70 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 p-6">
-                <h3 className="text-xl font-semibold mb-4 text-neutral-900">Mindful Moments</h3>
-                <p className="text-neutral-600 leading-relaxed">
-                  Breathing exercises and meditation practices for mental clarity and calm.
-                </p>
-              </div>
-            </Reveal>
-          </div>
-        </section>
-
-        {/* Final CTA Section */}
-        <section className="py-16 lg:py-24 text-center">
-          <Reveal>
-            <div className="max-w-4xl mx-auto">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-neutral-900 mb-6">
-                Ready to Begin?
-              </h2>
-              <p className="text-lg md:text-xl text-neutral-600 mb-12 leading-relaxed">
-                Join our community and start your journey with mindful movement practices 
-                designed to strengthen your body and nourish your spirit.
-              </p>
-              <GlassButton 
-                label="Become a Member" 
-                href="/join" 
-                variant="primary"
-                className="text-lg px-10 py-5"
+            <motion.div
+              variants={fadeInVariants}
+              transition={{ duration: 0.3, delay: 0.2 }}
+              className="relative"
+            >
+              <img
+                src="/assets/Lily_BIO_picture.png"
+                alt="Lily"
+                className="w-full rounded-2xl shadow-2xl"
               />
-            </div>
-          </Reveal>
-        </section>
+            </motion.div>
+          </div>
+        </div>
+      </motion.section>
 
-        {/* Contact Section */}
-        <section className="py-16 lg:py-24">
-          <Reveal>
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-neutral-900 mb-6">
-                Stay connected.
-              </h2>
-              <p className="text-lg md:text-xl text-neutral-600 max-w-2xl mx-auto leading-relaxed">
-                Have questions about membership, classes, or need support? We're here to help you on your movement journey.
-              </p>
-            </div>
-          </Reveal>
+      {/* Classes Preview */}    
+      <motion.section
+        initial="hidden" 
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={fadeInVariants}
+        transition={{ duration: 0.3 }}
+        className="py-20 px-6 bg-gray-50"
+      >
+        <div className="max-w-6xl mx-auto">
+          <motion.h2
+            variants={fadeInVariants}
+            transition={{ duration: 0.3, delay: 0.1 }}
+            className="text-4xl md:text-5xl font-bold text-center mb-16 text-gray-900"
+          >
+            Movement Classes
+          </motion.h2>
           
-          <Reveal delay={0.2}>
-            <ContactForm />
-          </Reveal>
-        </section>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                title: "Contemporary Flow",
+                description: "Fluid movements that connect mind, body, and spirit",
+                video: "/assets/Lily_dancing1.mp4"
+              },
+              {
+                title: "Mindful Movement", 
+                description: "Gentle practices focused on awareness and presence",
+                video: "/assets/Lily_dancing2.mp4"
+              },
+              {
+                title: "Expressive Dance",
+                description: "Freedom of expression through creative movement",
+                video: "/assets/LM_recap1.mp4"
+              }
+            ].map((classItem, index) => (
+              <motion.div
+                key={classItem.title}
+                variants={fadeInVariants}
+                transition={{ duration: 0.3, delay: 0.1 * (index + 1) }}
+                className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+              >
+                <div className="relative">
+                  <video
+                    src={classItem.video}
+                    className="w-full h-48 object-cover cursor-pointer"
+                    muted
+                    loop
+                    onMouseEnter={(e) => e.currentTarget.play()}
+                    onMouseLeave={(e) => e.currentTarget.pause()}
+                    onClick={() => setVideoModal(classItem.video)}
+                  />
+                  <div className="absolute inset-0 bg-black/20 hover:bg-black/10 transition-all duration-200" />
+                </div>
+                <div className="p-6">
+                  <h3 className="text-xl font-bold mb-3 text-gray-900">{classItem.title}</h3>
+                  <p className="text-gray-700 mb-4">{classItem.description}</p>
+                  <button
+                    onClick={() => setVideoModal(classItem.video)}
+                    className="text-gray-900 font-semibold hover:text-gray-700 transition-colors"
+                  >
+                    Watch Preview →
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </motion.section>
 
-      </main>
+      {/* Testimonials */}
+      <motion.section
+        initial="hidden"
+        whileInView="visible" 
+        viewport={{ once: true, amount: 0.2 }}
+        variants={fadeInVariants}
+        transition={{ duration: 0.3 }}
+        className="py-20 px-6 bg-white"
+      >
+        <div className="max-w-6xl mx-auto">
+          <motion.h2
+            variants={fadeInVariants}
+            transition={{ duration: 0.3, delay: 0.1 }}
+            className="text-4xl md:text-5xl font-bold text-center mb-16 text-gray-900"
+          >
+            What Students Say
+          </motion.h2>
+          
+          <div className="grid md:grid-cols-2 gap-8">
+            {[
+              {
+                video: "/assets/testimonio1.mp4",
+                name: "Sarah M.",
+                title: "Student since 2022"
+              },
+              {
+                video: "/assets/testimonio2.mp4", 
+                name: "Maria L.",
+                title: "Student since 2021"
+              }
+            ].map((testimonial, index) => (
+              <motion.div
+                key={testimonial.name}
+                variants={fadeInVariants}
+                transition={{ duration: 0.3, delay: 0.1 * (index + 1) }}
+                className="bg-gray-50 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                <video
+                  src={testimonial.video}
+                  className="w-full h-64 object-cover cursor-pointer"
+                  muted
+                  onClick={() => setVideoModal(testimonial.video)}
+                />
+                <div className="p-6">
+                  <h3 className="font-bold text-gray-900">{testimonial.name}</h3>
+                  <p className="text-gray-600">{testimonial.title}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </motion.section>
+
+      {/* Contact Section */}
+      <motion.section
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={fadeInVariants}
+        transition={{ duration: 0.3 }}
+        className="py-20 px-6 bg-gray-900 text-white"
+      >
+        <div className="max-w-4xl mx-auto">
+          <motion.h2
+            variants={fadeInVariants}
+            transition={{ duration: 0.3, delay: 0.1 }}
+            className="text-4xl md:text-5xl font-bold text-center mb-16"
+          >
+            Start Your Journey
+          </motion.h2>
+          
+          <motion.div
+            variants={fadeInVariants}
+            transition={{ duration: 0.3, delay: 0.2 }}
+            className="max-w-2xl mx-auto"
+          >
+            <ContactForm />
+          </motion.div>
+        </div>
+      </motion.section>
 
       {/* Video Modal */}
-      <VideoModal
-        isOpen={isLilyVideoOpen}
-        onClose={() => setIsLilyVideoOpen(false)}
-        src="/assets/lilys-backgroundweb.mp4"
-        title="Lily's Background"
-      />
+      {videoModal && (
+        <VideoModal
+          isOpen={!!videoModal}
+          onClose={() => setVideoModal(null)}
+          videoSrc={videoModal}
+        />
+      )}
     </div>
   );
 }

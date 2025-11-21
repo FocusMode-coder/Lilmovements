@@ -1,36 +1,35 @@
 'use client';
 
 import { useState } from 'react';
-import GlassButton from '@/components/GlassButton';
+import { motion } from 'framer-motion';
 
-interface FormData {
+interface ContactFormData {
   name: string;
   email: string;
   topic: string;
   message: string;
 }
 
-interface FormState {
-  isLoading: boolean;
-  message: string;
-  isError: boolean;
-}
-
-export default function ContactForm() {
-  const [formData, setFormData] = useState<FormData>({
+export function ContactForm() {
+  const [formData, setFormData] = useState<ContactFormData>({
     name: '',
     email: '',
-    topic: '',
+    topic: 'general',
     message: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<{
+    type: 'success' | 'error' | null;
+    message: string;
+  }>({ type: null, message: '' });
 
-  const [formState, setFormState] = useState<FormState>({
-    isLoading: false,
-    message: '',
-    isError: false
-  });
+  // Fast, smooth animations
+  const fadeInVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+  };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -40,9 +39,8 @@ export default function ContactForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Reset previous messages
-    setFormState({ isLoading: true, message: '', isError: false });
+    setIsSubmitting(true);
+    setSubmitStatus({ type: null, message: '' });
 
     try {
       const response = await fetch('/api/contact', {
@@ -55,81 +53,87 @@ export default function ContactForm() {
 
       const result = await response.json();
 
-      if (result.ok) {
-        setFormState({
-          isLoading: false,
-          message: 'Thank you! Your message has been sent successfully.',
-          isError: false
+      if (response.ok) {
+        setSubmitStatus({
+          type: 'success',
+          message: 'Thank you for your message! We\'ll get back to you soon.'
         });
-        // Reset form
         setFormData({
           name: '',
           email: '',
-          topic: '',
+          topic: 'general',
           message: ''
         });
       } else {
-        setFormState({
-          isLoading: false,
-          message: result.error || 'Something went wrong. Please try again.',
-          isError: true
+        setSubmitStatus({
+          type: 'error',
+          message: result.error || 'Something went wrong. Please try again.'
         });
       }
     } catch (error) {
-      setFormState({
-        isLoading: false,
-        message: 'Network error. Please check your connection and try again.',
-        isError: true
+      setSubmitStatus({
+        type: 'error',
+        message: 'Network error. Please check your connection and try again.'
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="rounded-3xl bg-white/60 backdrop-blur-md border border-white/70 shadow-sm p-8 max-w-2xl mx-auto">
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={fadeInVariants}
+      transition={{ duration: 0.3 }}
+      className="w-full max-w-2xl mx-auto"
+    >
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Name Field */}
-        <div>
-          <label htmlFor="name" className="block text-sm font-medium text-neutral-900 mb-2">
-            Name *
-          </label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            required
-            className="w-full px-4 py-3 rounded-2xl bg-white/50 backdrop-blur-sm border border-white/60 
-                     text-neutral-900 placeholder-neutral-500 
-                     focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:border-transparent
-                     transition-all duration-200"
-            placeholder="Your full name"
-          />
+        <div className="grid md:grid-cols-2 gap-6">
+          <motion.div
+            variants={fadeInVariants}
+            transition={{ duration: 0.3, delay: 0.1 }}
+          >
+            <label htmlFor="name" className="block text-sm font-medium text-white mb-2">
+              Name *
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              required
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all duration-200"
+              placeholder="Your full name"
+            />
+          </motion.div>
+
+          <motion.div
+            variants={fadeInVariants}
+            transition={{ duration: 0.3, delay: 0.1 }}
+          >
+            <label htmlFor="email" className="block text-sm font-medium text-white mb-2">
+              Email *
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              required
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all duration-200"
+              placeholder="your@email.com"
+            />
+          </motion.div>
         </div>
 
-        {/* Email Field */}
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-neutral-900 mb-2">
-            Email *
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            required
-            className="w-full px-4 py-3 rounded-2xl bg-white/50 backdrop-blur-sm border border-white/60 
-                     text-neutral-900 placeholder-neutral-500 
-                     focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:border-transparent
-                     transition-all duration-200"
-            placeholder="your.email@example.com"
-          />
-        </div>
-
-        {/* Topic Field */}
-        <div>
-          <label htmlFor="topic" className="block text-sm font-medium text-neutral-900 mb-2">
+        <motion.div
+          variants={fadeInVariants}
+          transition={{ duration: 0.3, delay: 0.2 }}
+        >
+          <label htmlFor="topic" className="block text-sm font-medium text-white mb-2">
             Topic
           </label>
           <select
@@ -137,24 +141,22 @@ export default function ContactForm() {
             name="topic"
             value={formData.topic}
             onChange={handleInputChange}
-            className="w-full px-4 py-3 rounded-2xl bg-white/50 backdrop-blur-sm border border-white/60 
-                     text-neutral-900 
-                     focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:border-transparent
-                     transition-all duration-200"
+            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all duration-200"
           >
-            <option value="">Select a topic (optional)</option>
-            <option value="Membership">Membership Questions</option>
-            <option value="Classes">Classes & Programs</option>
-            <option value="Technical Support">Technical Support</option>
-            <option value="General Inquiry">General Inquiry</option>
-            <option value="Partnerships">Partnerships</option>
-            <option value="Other">Other</option>
+            <option value="general" className="text-gray-900">General Inquiry</option>
+            <option value="classes" className="text-gray-900">Classes & Schedules</option>
+            <option value="membership" className="text-gray-900">Membership</option>
+            <option value="private" className="text-gray-900">Private Sessions</option>
+            <option value="events" className="text-gray-900">Events & Workshops</option>
+            <option value="other" className="text-gray-900">Other</option>
           </select>
-        </div>
+        </motion.div>
 
-        {/* Message Field */}
-        <div>
-          <label htmlFor="message" className="block text-sm font-medium text-neutral-900 mb-2">
+        <motion.div
+          variants={fadeInVariants}
+          transition={{ duration: 0.3, delay: 0.3 }}
+        >
+          <label htmlFor="message" className="block text-sm font-medium text-white mb-2">
             Message *
           </label>
           <textarea
@@ -164,35 +166,41 @@ export default function ContactForm() {
             onChange={handleInputChange}
             required
             rows={5}
-            className="w-full px-4 py-3 rounded-2xl bg-white/50 backdrop-blur-sm border border-white/60 
-                     text-neutral-900 placeholder-neutral-500 
-                     focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:border-transparent
-                     transition-all duration-200 resize-vertical"
-            placeholder="How can we help you?"
+            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all duration-200 resize-none"
+            placeholder="Tell us about your interest in movement classes, questions about membership, or anything else you'd like to know..."
           />
-        </div>
+        </motion.div>
 
-        {/* Status Message */}
-        {formState.message && (
-          <div className={`p-4 rounded-2xl ${
-            formState.isError 
-              ? 'bg-red-50/80 border border-red-200 text-red-800' 
-              : 'bg-green-50/80 border border-green-200 text-green-800'
-          }`}>
-            {formState.message}
-          </div>
+        {submitStatus.type && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+            className={`p-4 rounded-lg ${
+              submitStatus.type === 'success'
+                ? 'bg-green-500/20 border border-green-500/30 text-green-300'
+                : 'bg-red-500/20 border border-red-500/30 text-red-300'
+            }`}
+          >
+            {submitStatus.message}
+          </motion.div>
         )}
 
-        {/* Submit Button */}
-        <div className="flex justify-center pt-4">
-          <GlassButton
-            label={formState.isLoading ? "Sending..." : "Send Message"}
-            onClick={() => {}} // Form submission is handled by onSubmit
-            variant="primary"
-            className="px-8 py-3 text-base disabled:opacity-50 disabled:cursor-not-allowed"
-          />
-        </div>
+        <motion.div
+          variants={fadeInVariants}
+          transition={{ duration: 0.3, delay: 0.4 }}
+          className="flex justify-center"
+        >
+          {/* Standardized button styling */}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="bg-white text-gray-900 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105 shadow-lg"
+          >
+            {isSubmitting ? 'Sending...' : 'Send Message'}
+          </button>
+        </motion.div>
       </form>
-    </div>
+    </motion.div>
   );
 }

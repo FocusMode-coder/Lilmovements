@@ -5,9 +5,9 @@
 /* minimal base to avoid FOUC */
 html, body, #__next { height: 100%; }
 
-/* Premium background gradient */
+/* Clean white background - removing any yellow/amber tint */
 body {
-  background: linear-gradient(180deg, #fffaf6 0%, #ffffff 50%, #ffffff 100%);
+  background: #ffffff;
   min-height: 100vh;
 }
 

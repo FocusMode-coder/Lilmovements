@@ -1,13 +1,18 @@
+'use client';
+
 import Image from "next/image";
 import GlassButton from "@/components/GlassButton";
 import Reveal from "@/components/Reveal";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { VideoModal } from './VideoModal';
+import Link from 'next/link';
 
 export default function Hero() {
   const { scrollYProgress } = useScroll();
   const titleRef = useRef(null);
   const isInView = useInView(titleRef, { once: true, margin: "-50px" });
+  const [isVideoOpen, setIsVideoOpen] = useState(false);
 
   // Simple parallax effect for logo card
   const logoY = useTransform(scrollYProgress, [0, 1], [0, -30]);
@@ -90,16 +95,21 @@ export default function Hero() {
 
           {/* CTA Button - Standard styling like other buttons */}
           <Reveal delay={0.6}>
-            <GlassButton 
-              label="Become a Member" 
-              href="/join" 
-              variant="primary"
-              className="text-lg px-10 py-5"
-            />
+            <Link
+              href="/join"
+              className="bg-white text-gray-900 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-all duration-200 transform hover:scale-105 shadow-lg"
+            >
+              Become a member
+            </Link>
           </Reveal>
 
         </div>
       </div>
+      <VideoModal
+        isOpen={isVideoOpen}
+        onClose={() => setIsVideoOpen(false)}
+        videoSrc="/assets/Lilinteview.mp4"
+      />
     </section>
   );
 }
